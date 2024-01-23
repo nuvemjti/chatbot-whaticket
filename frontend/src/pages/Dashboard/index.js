@@ -366,7 +366,7 @@ const Dashboard = () => {
                     variant="h6"
                     paragraph
                   >
-                    {i18n.t("dashboard.title.atdpendentes")}
+                    Atd. Pendentes
                   </Typography>
                   <Grid item>
                     <Typography
