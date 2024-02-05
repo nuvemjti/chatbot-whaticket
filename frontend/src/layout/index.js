@@ -454,7 +454,6 @@ const LoggedInLayout = ({ children, themeToggle }) => {
               </MenuItem>
             </Menu>
           </div>
-
         </Toolbar>
       </AppBar>
       <main className={classes.content}>
