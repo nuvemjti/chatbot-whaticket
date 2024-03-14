@@ -21,4 +21,6 @@ tagRoutes.delete("/tags/:tagId", isAuth, TagController.remove);
 
 tagRoutes.post("/tags/sync", isAuth, TagController.syncTags);
 
+tagRoutes.delete("/tags", isAuth, TagController.removeAll);
+
 export default tagRoutes;

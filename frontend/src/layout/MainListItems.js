@@ -44,6 +44,7 @@ import { makeStyles } from "@material-ui/core/styles";
 import { AllInclusive, AttachFile, BlurCircular, DeviceHubOutlined, Schedule } from '@material-ui/icons';
 import usePlans from "../hooks/usePlans";
 import Typography from "@material-ui/core/Typography";
+import useVersion from "../hooks/useVersion";
 
 const useStyles = makeStyles((theme) => ({
   ListSubheader: {
@@ -152,6 +153,20 @@ const MainListItems = (props) => {
   const [searchParam] = useState("");
   const [chats, dispatch] = useReducer(reducer, []);
   const { getPlanCompany } = usePlans();
+  
+  const [version, setVersion] = useState(false);
+  
+  
+  const { getVersion } = useVersion();
+
+  useEffect(() => {
+    async function fetchVersion() {
+      const _version = await getVersion();
+      setVersion(_version.version);
+    }
+    fetchVersion();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
  
 
   useEffect(() => {
@@ -285,11 +300,14 @@ const MainListItems = (props) => {
         icon={<WhatsAppIcon />}
       />
 	  
+	{showIntegrations && (  
 	  <ListItemLink
         to="/kanban"
         primary={i18n.t("Kanban")}
         icon={<TableChartIcon />}
       />
+	  )}
+
 
       <ListItemLink
         to="/quick-messages"
@@ -486,7 +504,8 @@ const MainListItems = (props) => {
               </Hidden> 
               */}
               <Typography style={{ fontSize: "12px", padding: "10px", textAlign: "right", fontWeight: "bold" }}>
-                Versão: 4.0.0
+                {`${version}`}
+
               </Typography>
             </React.Fragment>
             }

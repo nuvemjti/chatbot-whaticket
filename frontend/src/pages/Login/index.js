@@ -10,9 +10,9 @@ import Box from "@material-ui/core/Box";
 import Typography from "@material-ui/core/Typography";
 import { makeStyles } from "@material-ui/core/styles";
 import Container from "@material-ui/core/Container";
-
+import { versionSystem } from "../../../package.json";
 import { i18n } from "../../translate/i18n";
-
+import { nomeEmpresa } from "../../../package.json";
 import { AuthContext } from "../../context/Auth/AuthContext";
 import logo from "../../assets/logo.png";
 
@@ -22,7 +22,7 @@ const Copyright = () => {
 		<Typography variant="body2" color="primary" align="center">
 			{"Copyright "}
  			<Link color="primary" href="#">
- 				PLW
+ 				{ nomeEmpresa } - v { versionSystem }
  			</Link>{" "}
  			{new Date().getFullYear()}
  			{"."}
@@ -123,6 +123,15 @@ const Login = () => {
 						onChange={handleChangeInput}
 						autoComplete="current-password"
 					/>
+					
+					<Grid container justify="flex-end">
+					  <Grid item xs={6} style={{ textAlign: "right" }}>
+						<Link component={RouterLink} to="/forgetpsw" variant="body2">
+						  Esqueceu sua senha?
+						</Link>
+					  </Grid>
+					</Grid>
+					
 					<Button
 						type="submit"
 						fullWidth
@@ -147,8 +156,7 @@ const Login = () => {
 				</form>
 			
 			</div>
-			
-			
+			<Box mt={8}><Copyright /></Box>
 		</Container>
 		</div>
 	);

@@ -22,7 +22,7 @@ import InputAdornment from "@material-ui/core/InputAdornment";
 
 import DeleteOutlineIcon from "@material-ui/icons/DeleteOutline";
 import EditIcon from "@material-ui/icons/Edit";
-
+import DeleteForeverIcon from "@material-ui/icons/DeleteForever";
 import MainContainer from "../../components/MainContainer";
 import MainHeader from "../../components/MainHeader";
 import MainHeaderButtonsWrapper from "../../components/MainHeaderButtonsWrapper";
@@ -35,6 +35,7 @@ import TagModal from "../../components/TagModal";
 import ConfirmationModal from "../../components/ConfirmationModal";
 import toastError from "../../errors/toastError";
 import { Chip } from "@material-ui/core";
+import { Tooltip } from "@material-ui/core";
 import { socketConnection } from "../../services/socket";
 import { AuthContext } from "../../context/Auth/AuthContext";
 
@@ -101,6 +102,7 @@ const Tags = () => {
   const [hasMore, setHasMore] = useState(false);
   const [selectedTag, setSelectedTag] = useState(null);
   const [deletingTag, setDeletingTag] = useState(null);
+  const [deletingAllTags, setDeletingAllTags] = useState(null);
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
   const [searchParam, setSearchParam] = useState("");
   const [tags, dispatch] = useReducer(reducer, []);
@@ -184,6 +186,22 @@ const Tags = () => {
     setPageNumber(1);
     await fetchTags();
   };
+  
+    const handleDeleteAllTags = async () => {
+    try {
+      await api.delete(`/tags`);
+      toast.success(i18n.t("tags.toasts.deletedAll"));
+    } catch (err) {
+      toastError(err);
+    }
+    setDeletingAllTags(null);
+    setSearchParam("");
+    setPageNumber();
+
+    dispatch({ type: "RESET" });
+    setPageNumber(1);
+    await fetchTags();
+  };
 
   const loadMore = () => {
     setPageNumber((prevState) => prevState + 1);
@@ -200,12 +218,21 @@ const Tags = () => {
   return (
     <MainContainer>
       <ConfirmationModal
-        title={deletingTag && `${i18n.t("tags.confirmationModal.deleteTitle")}`}
+        title={
+          deletingTag ? `${i18n.t("tags.confirmationModal.deleteTitle")}`
+          : `${i18n.t("tags.confirmationModal.deleteAllTitle")}`
+        }
         open={confirmModalOpen}
         onClose={setConfirmModalOpen}
-        onConfirm={() => handleDeleteTag(deletingTag.id)}
+        onConfirm={() => 
+          deletingTag ? handleDeleteTag(deletingTag.id)
+         : handleDeleteAllTags(deletingAllTags)
+        }
       >
-        {i18n.t("tags.confirmationModal.deleteMessage")}
+        {
+          deletingTag ? `${i18n.t("tags.confirmationModal.deleteMessage")}`
+            : `${i18n.t("tags.confirmationModal.deleteAllMessage")}`
+        }
       </ConfirmationModal>
       <TagModal
         open={tagModalOpen}
@@ -237,6 +264,19 @@ const Tags = () => {
           >
             {i18n.t("tags.buttons.add")}
           </Button>
+		  
+		  <Tooltip title={i18n.t("tags.buttons.deleteAll")}>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={(e) => {
+                setConfirmModalOpen(true);
+                setDeletingAllTags(tags);
+              }}
+            >
+              <DeleteForeverIcon />
+            </Button>
+          </Tooltip>
         </MainHeaderButtonsWrapper>
       </MainHeader>
       <Paper

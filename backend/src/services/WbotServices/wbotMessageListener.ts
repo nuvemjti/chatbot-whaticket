@@ -1026,6 +1026,25 @@ const verifyQueue = async (
 
 
   if (queues.length === 1) {
+
+    const sendGreetingMessageOneQueues = await Setting.findOne({
+      where: {
+        key: "sendGreetingMessageOneQueues",
+        companyId: ticket.companyId
+      }
+    });
+
+    if (greetingMessage.length > 1 && sendGreetingMessageOneQueues?.value === "enabled") {
+      const body = formatBody(`${greetingMessage}`, contact);
+
+      await wbot.sendMessage(
+        `${contact.number}@${ticket.isGroup ? "g.us" : "s.whatsapp.net"}`,
+        {
+          text: body
+        }
+      );
+    }
+
     const firstQueue = head(queues);
     let chatbot = false;
     if (firstQueue?.options) {
