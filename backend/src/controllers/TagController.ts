@@ -11,7 +11,6 @@ import DeleteService from "../services/TagServices/DeleteService";
 import SimpleListService from "../services/TagServices/SimpleListService";
 import SyncTagService from "../services/TagServices/SyncTagsService";
 import KanbanListService from "../services/TagServices/KanbanListService";
-import DeleteAllService from "../services/TagServices/DeleteAllService";
 
 type IndexQuery = {
   searchParam?: string;
@@ -105,17 +104,6 @@ export const remove = async (
   });
 
   return res.status(200).json({ message: "Tag deleted" });
-};
-
-export const removeAll = async (
-  req: Request,
-  res: Response
-): Promise<Response> => {
-  const { tagId } = req.params;
-
-  await DeleteAllService();
-
-  return res.send();
 };
 
 export const list = async (req: Request, res: Response): Promise<Response> => {
