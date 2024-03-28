@@ -29,6 +29,7 @@
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
     "cron": "^2.1.0",
+    "body-parser":"^1.20.2",
     "date-fns": "^2.28.0",
     "dotenv": "^16.0.0",
     "express": "^4.17.3",
