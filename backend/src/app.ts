@@ -12,6 +12,7 @@ import AppError from "./errors/AppError";
 import routes from "./routes";
 import { logger } from "./utils/logger";
 import { messageQueue, sendScheduledMessages } from "./queues";
+import bodyParser from 'body-parser';
 
 Sentry.init({ dsn: process.env.SENTRY_DSN });
 
@@ -21,6 +22,9 @@ app.set("queues", {
   messageQueue,
   sendScheduledMessages
 });
+
+const bodyparser = require('body-parser');
+app.use(bodyParser.json({ limit: '10mb' }));
 
 app.use(
   cors({
