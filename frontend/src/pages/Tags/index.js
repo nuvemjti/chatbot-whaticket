@@ -22,7 +22,6 @@ import InputAdornment from "@material-ui/core/InputAdornment";
 
 import DeleteOutlineIcon from "@material-ui/icons/DeleteOutline";
 import EditIcon from "@material-ui/icons/Edit";
-import DeleteForeverIcon from "@material-ui/icons/DeleteForever";
 import MainContainer from "../../components/MainContainer";
 import MainHeader from "../../components/MainHeader";
 import MainHeaderButtonsWrapper from "../../components/MainHeaderButtonsWrapper";
@@ -102,7 +101,6 @@ const Tags = () => {
   const [hasMore, setHasMore] = useState(false);
   const [selectedTag, setSelectedTag] = useState(null);
   const [deletingTag, setDeletingTag] = useState(null);
-  const [deletingAllTags, setDeletingAllTags] = useState(null);
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
   const [searchParam, setSearchParam] = useState("");
   const [tags, dispatch] = useReducer(reducer, []);
@@ -186,22 +184,6 @@ const Tags = () => {
     setPageNumber(1);
     await fetchTags();
   };
-  
-    const handleDeleteAllTags = async () => {
-    try {
-      await api.delete(`/tags`);
-      toast.success(i18n.t("tags.toasts.deletedAll"));
-    } catch (err) {
-      toastError(err);
-    }
-    setDeletingAllTags(null);
-    setSearchParam("");
-    setPageNumber();
-
-    dispatch({ type: "RESET" });
-    setPageNumber(1);
-    await fetchTags();
-  };
 
   const loadMore = () => {
     setPageNumber((prevState) => prevState + 1);
@@ -263,20 +245,7 @@ const Tags = () => {
             onClick={handleOpenTagModal}
           >
             {i18n.t("tags.buttons.add")}
-          </Button>
-		  
-		  <Tooltip title={i18n.t("tags.buttons.deleteAll")}>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={(e) => {
-                setConfirmModalOpen(true);
-                setDeletingAllTags(tags);
-              }}
-            >
-              <DeleteForeverIcon />
-            </Button>
-          </Tooltip>
+          </Button>		  
         </MainHeaderButtonsWrapper>
       </MainHeader>
       <Paper
