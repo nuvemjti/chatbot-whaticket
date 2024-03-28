@@ -197,24 +197,15 @@ const Tags = () => {
     }
   };
 
-  return (
+return (
     <MainContainer>
       <ConfirmationModal
-        title={
-          deletingTag ? `${i18n.t("tags.confirmationModal.deleteTitle")}`
-          : `${i18n.t("tags.confirmationModal.deleteAllTitle")}`
-        }
+        title={deletingTag && `${i18n.t("tags.confirmationModal.deleteTitle")}`}
         open={confirmModalOpen}
         onClose={setConfirmModalOpen}
-        onConfirm={() => 
-          deletingTag ? handleDeleteTag(deletingTag.id)
-         : handleDeleteAllTags(deletingAllTags)
-        }
+        onConfirm={() => handleDeleteTag(deletingTag.id)}
       >
-        {
-          deletingTag ? `${i18n.t("tags.confirmationModal.deleteMessage")}`
-            : `${i18n.t("tags.confirmationModal.deleteAllMessage")}`
-        }
+        {i18n.t("tags.confirmationModal.deleteMessage")}
       </ConfirmationModal>
       <TagModal
         open={tagModalOpen}
