@@ -369,7 +369,7 @@ const MessagesList = ({ ticket, ticketId, isGroup }) => {
     const companyId = localStorage.getItem("companyId");
     const socket = socketConnection({ companyId });
 
-    socket.on("connect", () => socket.emit("joinChatBox", `${ticket.id}`));
+    socket.on("ready", () => socket.emit("joinChatBox", `${ticket.id}`));
 
     socket.on(`company-${companyId}-appMessage`, (data) => {
       if (data.action === "create") {

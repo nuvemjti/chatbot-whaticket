@@ -109,7 +109,7 @@ export default function TicketMessagesDialog({ open, handleClose, ticketId }) {
 
     if (open) {
       socket = socketConnection({ companyId });
-      socket.on("connect", () => socket.emit("joinChatBox", `${ticket.id}`));
+      socket.on("ready", () => socket.emit("joinChatBox", `${ticket.id}`));
 
       socket.on(`company-${companyId}-ticket`, (data) => {
         if (data.action === "update") {

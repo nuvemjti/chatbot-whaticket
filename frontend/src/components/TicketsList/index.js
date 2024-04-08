@@ -259,7 +259,7 @@ const TicketsList = (props) => {
 		const notBelongsToUserQueues = (ticket) =>
 			ticket.queueId && selectedQueueIds.indexOf(ticket.queueId) === -1;
 
-		socket.on("connect", () => {
+		socket.on("ready", () => {
 			if (status) {
 				socket.emit("joinTickets", status);
 			} else {

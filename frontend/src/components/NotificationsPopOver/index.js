@@ -109,7 +109,7 @@ const NotificationsPopOver = (volume) => {
 
 	useEffect(() => {
 		const socket = socketConnection({companyId: user.companyId, userId: user.id});
-		socket.on("connect", () => socket.emit("joinNotification"));
+		socket.on("ready", () => socket.emit("joinNotification"));
 
 		socket.on(`company-${user.companyId}-ticket`, data => {
 			if (data.action === "updateUnread" || data.action === "delete") {
