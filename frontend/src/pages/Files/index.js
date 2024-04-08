@@ -133,6 +133,9 @@ const FileLists = () => {
 
     useEffect(() => {
         const socket = socketConnection({ companyId: user.companyId });
+        if (!socket) {
+          return () => {}; 
+        }
 
         socket.on(`company-${user.companyId}-file`, (data) => {
             if (data.action === "update" || data.action === "create") {

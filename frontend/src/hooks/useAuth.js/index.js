@@ -77,6 +77,9 @@ const useAuth = () => {
     if (companyId) {
    
     const socket = socketConnection({ companyId });
+      if (!socket) {
+        return () => {}; 
+      }
 
       socket.on(`company-${companyId}-user`, (data) => {
         if (data.action === "update" && data.user.id === user.id) {

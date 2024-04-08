@@ -29,6 +29,9 @@ const QrcodeModal = ({ open, onClose, whatsAppId }) => {
     if (!whatsAppId) return;
     const companyId = localStorage.getItem("companyId");
     const socket = socketConnection({ companyId });
+    if (!socket) {
+      return () => {}; 
+    }
 
     socket.on(`company-${companyId}-whatsappSession`, (data) => {
       if (data.action === "update" && data.session.id === whatsAppId) {

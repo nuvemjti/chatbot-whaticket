@@ -109,6 +109,10 @@ const NotificationsPopOver = (volume) => {
 
 	useEffect(() => {
 		const socket = socketConnection({companyId: user.companyId, userId: user.id});
+    if (!socket) {
+      return () => {}; 
+    }
+
 		socket.on("ready", () => socket.emit("joinNotification"));
 
 		socket.on(`company-${user.companyId}-ticket`, data => {

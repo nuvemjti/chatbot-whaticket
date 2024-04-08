@@ -251,6 +251,9 @@ const TicketsList = (props) => {
 
 	useEffect(() => {
 		const socket = openSocket();
+    if (!socket) {
+      return () => {}; 
+    }
 
 		const shouldUpdateTicket = (ticket) =>
 			(!ticket.userId || ticket.userId === user?.id || showAll) &&

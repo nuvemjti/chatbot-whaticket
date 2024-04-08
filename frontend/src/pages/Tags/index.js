@@ -134,6 +134,9 @@ const Tags = () => {
 
   useEffect(() => {
     const socket = socketConnection({ companyId: user.companyId });
+    if (!socket) {
+      return () => {}; 
+    }
 
     socket.on("user", (data) => {
       if (data.action === "update" || data.action === "create") {

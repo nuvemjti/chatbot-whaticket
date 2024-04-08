@@ -127,6 +127,9 @@ const Quickemessages = () => {
   useEffect(() => {
     const companyId = user.companyId;
     const socket = socketConnection({ companyId, userId: user.id });
+    if (!socket) {
+      return () => {}; 
+    }
 
     socket.on(`company${companyId}-quickemessage`, (data) => {
       if (data.action === "update" || data.action === "create") {

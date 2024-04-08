@@ -201,6 +201,9 @@ const TicketsListCustom = (props) => {
   useEffect(() => {
     const companyId = localStorage.getItem("companyId");
     const socket = socketConnection({ companyId });
+    if (!socket) {
+      return () => {}; 
+    }
 
     const shouldUpdateTicket = (ticket) =>
       (!ticket.userId || ticket.userId === user?.id || showAll) &&

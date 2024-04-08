@@ -161,6 +161,9 @@ const Schedules = () => {
   useEffect(() => {
     handleOpenScheduleModalFromContactId();
     const socket = socketConnection({ companyId: user.companyId });
+    if (!socket) {
+      return () => {}; 
+    }
 
     socket.on(`company${user.companyId}-schedule`, (data) => {
       if (data.action === "update" || data.action === "create") {

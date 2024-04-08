@@ -261,6 +261,9 @@ const LoggedInLayout = ({ children, themeToggle }) => {
     const userId = localStorage.getItem("userId");
 
     const socket = socketConnection({ companyId });
+    if (!socket) {
+      return () => {}; 
+    }
 
     socket.on(`company-${companyId}-auth`, (data) => {
       if (data.user.id === +userId) {

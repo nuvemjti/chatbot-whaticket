@@ -368,6 +368,9 @@ const MessagesList = ({ ticket, ticketId, isGroup }) => {
   useEffect(() => {
     const companyId = localStorage.getItem("companyId");
     const socket = socketConnection({ companyId });
+    if (!socket) {
+      return () => {}; 
+    }
 
     socket.on("ready", () => socket.emit("joinChatBox", `${ticket.id}`));
 

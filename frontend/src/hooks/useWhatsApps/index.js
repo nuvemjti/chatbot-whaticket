@@ -75,6 +75,9 @@ const useWhatsApps = () => {
   useEffect(() => {
     const companyId = localStorage.getItem("companyId");
     const socket = socketConnection({ companyId });
+    if (!socket) {
+      return () => {}; 
+    }
 
     socket.on(`company-${companyId}-whatsapp`, (data) => {
       if (data.action === "update") {

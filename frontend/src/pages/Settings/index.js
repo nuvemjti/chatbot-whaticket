@@ -53,6 +53,9 @@ const Settings = () => {
   useEffect(() => {
     const companyId = localStorage.getItem("companyId");
     const socket = socketConnection({ companyId });
+    if (!socket) {
+      return () => {}; 
+    }
 
     socket.on(`company-${companyId}-settings`, (data) => {
       if (data.action === "update") {

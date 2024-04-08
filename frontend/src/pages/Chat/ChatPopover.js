@@ -138,6 +138,9 @@ export default function ChatPopover() {
   useEffect(() => {
     const companyId = localStorage.getItem("companyId");
     const socket = socketConnection({ companyId });
+    if (!socket) {
+      return () => {}; 
+    }
     
     socket.on(`company-${companyId}-chat`, (data) => {
       if (data.action === "new-message") {

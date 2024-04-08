@@ -141,6 +141,9 @@ const Prompts = () => {
 
   useEffect(() => {
     const socket = socketConnection({ companyId, userId: user.id });
+    if (!socket) {
+      return () => {}; 
+    }
 
     socket.on(`company-${companyId}-prompt`, (data) => {
       if (data.action === "update" || data.action === "create") {
