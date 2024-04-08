@@ -2,14 +2,19 @@ import openSocket from "socket.io-client";
 import { isObject } from "lodash";
 
 export function socketConnection(params) {
-  let userId = null;
-  if (localStorage.getItem("userId")) {
-    userId = localStorage.getItem("userId");
+  let token = null;
+  if (localStorage.getItem("token")) {
+    token = JSON.parse(localStorage.getItem("token"));
   }
+  
+  if (!token) {
+    return null;
+  }
+  
   return openSocket(process.env.REACT_APP_BACKEND_URL, {
-    transports: ["websocket", "polling", "flashsocket"],
+    transports: ["websocket"],
     pingTimeout: 18000,
     pingInterval: 18000,
-    query: isObject(params) ? { ...params} : { userId: params.userId },
+    query: { token },
   });
 }

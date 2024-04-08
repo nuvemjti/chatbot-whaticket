@@ -130,7 +130,8 @@ const UpdateTicketService = async ({
             ratingAt: moment().toDate()
           });
 
-          io.to("open")
+          io.to(`company-${ticket.companyId}-open`)
+            .to(`queue-${ticket.queueId}-open`)
             .to(ticketId.toString())
             .emit(`company-${ticket.companyId}-ticket`, {
               action: "delete",
@@ -266,14 +267,18 @@ const UpdateTicketService = async ({
 
     if (ticket.status !== oldStatus || ticket.user?.id !== oldUserId) {
 
-      io.to(oldStatus).emit(`company-${companyId}-ticket`, {
-        action: "delete",
-        ticketId: ticket.id
-      });
+      io.to(`company-${companyId}-${oldStatus}`)
+        .to(`queue-${ticket.queueId}-${oldStatus}`)
+        .emit(`company-${companyId}-ticket`, {
+          action: "delete",
+          ticketId: ticket.id
+        });
     }
 
-    io.to(ticket.status)
-      .to("notification")
+    io.to(`company-${companyId}-${ticket.status}`)
+      .to(`company-${companyId}-notification`)
+      .to(`queue-${ticket.queueId}-${ticket.status}`)
+      .to(`queue-${ticket.queueId}-notification`)
       .to(ticketId.toString())
       .emit(`company-${companyId}-ticket`, {
         action: "update",
