@@ -33,7 +33,7 @@ import toastError from "../errors/toastError";
 import AnnouncementsPopover from "../components/AnnouncementsPopover";
 
 import logo from "../assets/logo.png";
-import { socketConnection } from "../services/socket";
+import { SocketContext } from "../context/Socket/SocketContext";
 import ChatPopover from "../pages/Chat/ChatPopover";
 
 import { useDate } from "../hooks/useDate";
@@ -242,6 +242,8 @@ const LoggedInLayout = ({ children, themeToggle }) => {
   // }, []);
   //##############################################################################
 
+  const socketManager = useContext(SocketContext);
+
   useEffect(() => {
     if (document.body.offsetWidth > 1200) {
       setDrawerOpen(true);
@@ -260,10 +262,7 @@ const LoggedInLayout = ({ children, themeToggle }) => {
     const companyId = localStorage.getItem("companyId");
     const userId = localStorage.getItem("userId");
 
-    const socket = socketConnection({ companyId });
-    if (!socket) {
-      return () => {}; 
-    }
+    const socket = socketManager.getSocket(companyId);
 
     socket.on(`company-${companyId}-auth`, (data) => {
       if (data.user.id === +userId) {
@@ -284,8 +283,7 @@ const LoggedInLayout = ({ children, themeToggle }) => {
       socket.disconnect();
       clearInterval(interval);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [socketManager]);
 
   const handleMenu = (event) => {
     setAnchorEl(event.currentTarget);

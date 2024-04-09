@@ -1,7 +1,5 @@
 import React, { useContext, useEffect, useReducer, useState } from "react";
 
-import openSocket from "socket.io-client";
-
 import {
   Button,
   IconButton,

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useReducer, useRef } from "react";
+import React, { useState, useEffect, useReducer, useRef, useContext } from "react";
 
 import { isSameDay, parseISO, format } from "date-fns";
 import clsx from "clsx";
@@ -31,7 +31,7 @@ import whatsBackgroundDark from "../../assets/wa-background-dark.png"; //DARK MO
 
 import api from "../../services/api";
 import toastError from "../../errors/toastError";
-import { socketConnection } from "../../services/socket";
+import { SocketContext } from "../../context/Socket/SocketContext";
 
 const useStyles = makeStyles((theme) => ({
   messagesListWrapper: {
@@ -327,6 +327,8 @@ const MessagesList = ({ ticket, ticketId, isGroup }) => {
   const messageOptionsMenuOpen = Boolean(anchorEl);
   const currentTicketId = useRef(ticketId);
 
+  const socketManager = useContext(SocketContext);
+
   useEffect(() => {
     dispatch({ type: "RESET" });
     setPageNumber(1);
@@ -367,20 +369,17 @@ const MessagesList = ({ ticket, ticketId, isGroup }) => {
 
   useEffect(() => {
     const companyId = localStorage.getItem("companyId");
-    const socket = socketConnection({ companyId });
-    if (!socket) {
-      return () => {}; 
-    }
+    const socket = socketManager.getSocket(companyId);
 
     socket.on("ready", () => socket.emit("joinChatBox", `${ticket.id}`));
 
     socket.on(`company-${companyId}-appMessage`, (data) => {
-      if (data.action === "create") {
+      if (data.action === "create" && data.message.ticketId === currentTicketId.current) {
         dispatch({ type: "ADD_MESSAGE", payload: data.message });
         scrollToBottom();
       }
 
-      if (data.action === "update") {
+      if (data.action === "update" && data.message.ticketId === currentTicketId.current) {
         dispatch({ type: "UPDATE_MESSAGE", payload: data.message });
       }
     });
@@ -388,7 +387,7 @@ const MessagesList = ({ ticket, ticketId, isGroup }) => {
     return () => {
       socket.disconnect();
     };
-  }, [ticketId, ticket]);
+  }, [ticketId, ticket, socketManager]);
 
   const loadMore = () => {
     setPageNumber((prevPageNumber) => prevPageNumber + 1);

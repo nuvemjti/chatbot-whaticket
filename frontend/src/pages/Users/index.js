@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useReducer } from "react";
+import React, { useState, useEffect, useReducer, useContext } from "react";
 import { toast } from "react-toastify";
 
 import { makeStyles } from "@material-ui/core/styles";
@@ -28,7 +28,7 @@ import TableRowSkeleton from "../../components/TableRowSkeleton";
 import UserModal from "../../components/UserModal";
 import ConfirmationModal from "../../components/ConfirmationModal";
 import toastError from "../../errors/toastError";
-import { socketConnection } from "../../services/socket";
+import { SocketContext } from "../../context/Socket/SocketContext";
 
 const reducer = (state, action) => {
   if (action.type === "LOAD_USERS") {
@@ -96,6 +96,8 @@ const Users = () => {
   const [searchParam, setSearchParam] = useState("");
   const [users, dispatch] = useReducer(reducer, []);
 
+  const socketManager = useContext(SocketContext);
+
   useEffect(() => {
     dispatch({ type: "RESET" });
     setPageNumber(1);
@@ -123,10 +125,7 @@ const Users = () => {
 
   useEffect(() => {
     const companyId = localStorage.getItem("companyId");
-    const socket = socketConnection({ companyId });
-    if (!socket) {
-      return () => {}; 
-    }
+    const socket = socketManager.getSocket(companyId);
 
     socket.on(`company-${companyId}-user`, (data) => {
       if (data.action === "update" || data.action === "create") {
@@ -141,7 +140,7 @@ const Users = () => {
     return () => {
       socket.disconnect();
     };
-  }, []);
+  }, [socketManager]);
 
   const handleOpenUserModal = () => {
     setSelectedUser(null);

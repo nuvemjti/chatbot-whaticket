@@ -33,7 +33,7 @@ import { WhatsAppsContext } from "../context/WhatsApp/WhatsAppsContext";
 import { AuthContext } from "../context/Auth/AuthContext";
 import LoyaltyRoundedIcon from '@material-ui/icons/LoyaltyRounded';
 import { Can } from "../components/Can";
-import { socketConnection } from "../services/socket";
+import { SocketContext } from "../context/Socket/SocketContext";
 import { isArray } from "lodash";
 import TableChartIcon from '@material-ui/icons/TableChart';
 import api from "../services/api";
@@ -159,6 +159,8 @@ const MainListItems = (props) => {
   
   const { getVersion } = useVersion();
 
+  const socketManager = useContext(SocketContext);
+
   useEffect(() => {
     async function fetchVersion() {
       const _version = await getVersion();
@@ -203,10 +205,7 @@ const MainListItems = (props) => {
 
   useEffect(() => {
     const companyId = localStorage.getItem("companyId");
-    const socket = socketConnection({ companyId });
-    if (!socket) {
-      return () => {}; 
-    }
+    const socket = socketManager.getSocket(companyId);
 
     socket.on(`company-${companyId}-chat`, (data) => {
       if (data.action === "new-message") {
@@ -219,7 +218,7 @@ const MainListItems = (props) => {
     return () => {
       socket.disconnect();
     };
-  }, []);
+  }, [socketManager]);
 
   useEffect(() => {
     let unreadsCount = 0;
