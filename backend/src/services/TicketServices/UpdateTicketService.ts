@@ -269,6 +269,7 @@ const UpdateTicketService = async ({
 
       io.to(`company-${companyId}-${oldStatus}`)
         .to(`queue-${ticket.queueId}-${oldStatus}`)
+        .to(`user-${oldUserId}`)
         .emit(`company-${companyId}-ticket`, {
           action: "delete",
           ticketId: ticket.id
@@ -280,6 +281,8 @@ const UpdateTicketService = async ({
       .to(`queue-${ticket.queueId}-${ticket.status}`)
       .to(`queue-${ticket.queueId}-notification`)
       .to(ticketId.toString())
+      .to(`user-${ticket?.userId}`)
+      .to(`user-${oldUserId}`)
       .emit(`company-${companyId}-ticket`, {
         action: "update",
         ticket
