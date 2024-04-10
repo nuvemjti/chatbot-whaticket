@@ -35,7 +35,7 @@ import ConfirmationModal from "../../components/ConfirmationModal";
 import toastError from "../../errors/toastError";
 import { Chip } from "@material-ui/core";
 import { Tooltip } from "@material-ui/core";
-import { socketConnection } from "../../services/socket";
+import { SocketContext } from "../../context/Socket/SocketContext";
 import { AuthContext } from "../../context/Auth/AuthContext";
 
 const reducer = (state, action) => {
@@ -119,6 +119,8 @@ const Tags = () => {
     }
   }, [searchParam, pageNumber]);
 
+  const socketManager = useContext(SocketContext);
+
   useEffect(() => {
     dispatch({ type: "RESET" });
     setPageNumber(1);
@@ -133,10 +135,7 @@ const Tags = () => {
   }, [searchParam, pageNumber, fetchTags]);
 
   useEffect(() => {
-    const socket = socketConnection({ companyId: user.companyId });
-    if (!socket) {
-      return () => {}; 
-    }
+    const socket = socketManager.getSocket(user.companyId);
 
     socket.on("user", (data) => {
       if (data.action === "update" || data.action === "create") {
@@ -151,7 +150,7 @@ const Tags = () => {
     return () => {
       socket.disconnect();
     };
-  }, [user]);
+  }, [socketManager, user]);
 
   const handleOpenTagModal = () => {
     setSelectedTag(null);

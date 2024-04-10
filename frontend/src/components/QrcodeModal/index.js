@@ -1,15 +1,17 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import QRCode from "qrcode.react";
 import toastError from "../../errors/toastError";
 
 import { Dialog, DialogContent, Paper, Typography, useTheme } from "@material-ui/core";
 import { i18n } from "../../translate/i18n";
 import api from "../../services/api";
-import { socketConnection } from "../../services/socket";
+import { SocketContext } from "../../context/Socket/SocketContext";
 
 const QrcodeModal = ({ open, onClose, whatsAppId }) => {
   const [qrCode, setQrCode] = useState("");
   const theme = useTheme();
+
+  const socketManager = useContext(SocketContext);
 
   useEffect(() => {
     const fetchSession = async () => {
@@ -28,10 +30,7 @@ const QrcodeModal = ({ open, onClose, whatsAppId }) => {
   useEffect(() => {
     if (!whatsAppId) return;
     const companyId = localStorage.getItem("companyId");
-    const socket = socketConnection({ companyId });
-    if (!socket) {
-      return () => {}; 
-    }
+    const socket = socketManager.getSocket(companyId);
 
     socket.on(`company-${companyId}-whatsappSession`, (data) => {
       if (data.action === "update" && data.session.id === whatsAppId) {
@@ -46,7 +45,7 @@ const QrcodeModal = ({ open, onClose, whatsAppId }) => {
     return () => {
       socket.disconnect();
     };
-  }, [whatsAppId, onClose]);
+  }, [whatsAppId, onClose, socketManager]);
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="lg" scroll="paper">

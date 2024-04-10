@@ -29,7 +29,7 @@ import ConfirmationModal from "../../components/ConfirmationModal";
 import { AuthContext } from "../../context/Auth/AuthContext";
 import usePlans from "../../hooks/usePlans";
 import { useHistory } from "react-router-dom/cjs/react-router-dom.min";
-import { socketConnection } from "../../services/socket";
+import { SocketContext } from "../../context/Socket/SocketContext";
 
 const useStyles = makeStyles((theme) => ({
   mainPaper: {
@@ -108,6 +108,8 @@ const Prompts = () => {
   const history = useHistory();
   const companyId = user.companyId;
 
+  const socketManager = useContext(SocketContext);
+
   useEffect(() => {
     async function fetchData() {
       const planConfigs = await getPlanCompany(undefined, companyId);
@@ -138,10 +140,7 @@ const Prompts = () => {
   }, []);
 
   useEffect(() => {
-    const socket = socketConnection({ companyId, userId: user.id });
-    if (!socket) {
-      return () => {}; 
-    }
+    const socket = socketManager.getSocket(companyId);
 
     socket.on(`company-${companyId}-prompt`, (data) => {
       if (data.action === "update" || data.action === "create") {
@@ -156,7 +155,7 @@ const Prompts = () => {
     return () => {
       socket.disconnect();
     };
-  }, []);
+  }, [companyId, socketManager]);
 
   const handleOpenPromptModal = () => {
     setPromptModalOpen(true);

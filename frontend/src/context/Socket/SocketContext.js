@@ -6,6 +6,7 @@ class ManagedSocket {
     this.socketManager = socketManager;
     this.rawSocket = socketManager.currentSocket;
     this.callbacks = [];
+    this.joins = [];
   }
   
   on(event, callback) {
@@ -20,14 +21,22 @@ class ManagedSocket {
     return this.rawSocket.off(event, callback);
   }
   
-  emit(...params) {
-    return this.rawSocket.emit(...params);
+  emit(event, ...params) {
+    if (event.startsWith("join")) {
+      this.joins.push({ event: event.substring(4), params });
+    }
+    return this.rawSocket.emit(event, ...params);
   }
   
   disconnect() {
+    for (const j of this.joins) {
+      this.rawSocket.emit(`leave${j.event}`, ...j.params);
+    }
+    this.joins = [];
     for (const c of this.callbacks) {
       this.rawSocket.off(c.event, c.callback);
     }
+    this.callbacks = [];
   }
 }
 
@@ -48,6 +57,10 @@ const SocketManager = {
     let userId = null;
     if (localStorage.getItem("userId")) {
       userId = localStorage.getItem("userId");
+    }
+
+    if (companyId && typeof companyId !== "string") {
+      companyId = `${companyId}`;
     }
 
     if (companyId !== this.currentCompanyId || userId !== this.currentUserId) {
