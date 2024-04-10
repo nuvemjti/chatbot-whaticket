@@ -59,6 +59,10 @@ const SocketManager = {
       userId = localStorage.getItem("userId");
     }
 
+    if (!companyId && !this.currentSocket) {
+      return new DummySocket();
+    }
+
     if (companyId && typeof companyId !== "string") {
       companyId = `${companyId}`;
     }
@@ -66,6 +70,7 @@ const SocketManager = {
     if (companyId !== this.currentCompanyId || userId !== this.currentUserId) {
       if (this.currentSocket) {
         this.currentSocket.disconnect();
+        this.currentSocket = null;
       }
 
       this.currentCompanyId = companyId;
