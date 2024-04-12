@@ -302,7 +302,7 @@ const MainListItems = (props) => {
         icon={<WhatsAppIcon />}
       />
 	  
-	{showIntegrations && (  
+	{showKanban && (  
 	  <ListItemLink
         to="/kanban"
         primary={i18n.t("Kanban")}
