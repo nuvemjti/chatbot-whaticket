@@ -1,7 +1,7 @@
 {
   "name": "frontend",
   "version": "0.1.0",
-  "versionSystem": "4.6.0",
+  "versionSystem": "4.6.2",
   "nomeEmpresa": "PLW Design",
   "private": true,
   "dependencies": {
