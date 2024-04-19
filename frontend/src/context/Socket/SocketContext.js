@@ -2,11 +2,29 @@ import { createContext } from "react";
 import openSocket from "socket.io-client";
 
 class ManagedSocket {
-  constructor(socketManager) {
+  constructor(socketManager, first) {
     this.socketManager = socketManager;
     this.rawSocket = socketManager.currentSocket;
     this.callbacks = [];
     this.joins = [];
+
+    this.rawSocket.on("connect", () => {
+      if (!this.rawSocket.recovered) {
+        const refreshJoinsOnReady = () => {
+          for (const j of this.joins) {
+            console.debug("refreshing join", j);
+            this.rawSocket.emit(`join${j.event}`, ...j.params);
+          }
+          this.rawSocket.off("ready", refreshJoinsOnReady);
+        };
+        for (const j of this.callbacks) {
+          this.rawSocket.off(j.event, j.callback);
+          this.rawSocket.on(j.event, j.callback);
+        }
+        
+        this.rawSocket.on("ready", refreshJoinsOnReady);
+      }
+    });
   }
   
   on(event, callback) {
@@ -18,12 +36,15 @@ class ManagedSocket {
   }
   
   off(event, callback) {
+    const i = this.callbacks.findIndex((c) => c.event === event && c.callback === callback);
+    this.callbacks.splice(i, 1);
     return this.rawSocket.off(event, callback);
   }
   
   emit(event, ...params) {
     if (event.startsWith("join")) {
       this.joins.push({ event: event.substring(4), params });
+      console.log("Joining", { event: event.substring(4), params});
     }
     return this.rawSocket.emit(event, ...params);
   }
@@ -89,7 +110,7 @@ const SocketManager = {
       });
       
       this.currentSocket.onAny((event, ...args) => {
-        console.debug("Event: ", event, "\nArg[0] ", args[0]);
+        console.debug("Event: ", { socket: this.currentSocket, event, args });
       });
       
       this.onReady(() => {
