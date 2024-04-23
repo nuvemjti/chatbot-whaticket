@@ -2,7 +2,7 @@ import { createContext } from "react";
 import openSocket from "socket.io-client";
 
 class ManagedSocket {
-  constructor(socketManager, first) {
+  constructor(socketManager) {
     this.socketManager = socketManager;
     this.rawSocket = socketManager.currentSocket;
     this.callbacks = [];
@@ -109,6 +109,17 @@ const SocketManager = {
         query: { token },
       });
       
+      this.currentSocket.on("disconnect", (reason) => {
+        console.warn("socket disconnected", reason);
+        if (reason.startsWith("io ")) {
+          this.currentSocket.connect();
+        }        
+      });
+      
+      this.currentSocket.on("connect", (...params) => {
+        console.warn("socket connected", params);
+      })
+      
       this.currentSocket.onAny((event, ...args) => {
         console.debug("Event: ", { socket: this.currentSocket, event, args });
       });
@@ -128,12 +139,9 @@ const SocketManager = {
       return
     }
     
-    const callAndRemoveOnReady = () => {
+    this.currentSocket.once("ready", () => {
       callbackReady();
-      this.currentSocket.off("ready", callAndRemoveOnReady);
-    };
-    
-    this.currentSocket.on("ready", callAndRemoveOnReady);
+    });
   },
 
 };
