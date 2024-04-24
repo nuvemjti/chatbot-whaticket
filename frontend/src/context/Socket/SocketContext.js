@@ -1,5 +1,6 @@
 import { createContext } from "react";
 import openSocket from "socket.io-client";
+import jwt from "jsonwebtoken";
 
 class ManagedSocket {
   constructor(socketManager) {
@@ -96,9 +97,19 @@ const SocketManager = {
         this.currentSocket = null;
       }
 
+      let token = JSON.parse(localStorage.getItem("token"));
+      const { exp } = jwt.decode(token);
+
+      if ( Date.now() >= exp*1000) {
+        console.warn("Expired token, reload after refresh");
+        setTimeout(() => {
+          window.location.reload();
+        },1000);
+        return new DummySocket();
+      }
+
       this.currentCompanyId = companyId;
       this.currentUserId = userId;
-      let token = JSON.parse(localStorage.getItem("token"));
       
       if (!token) {
         return new DummySocket();
@@ -114,7 +125,15 @@ const SocketManager = {
       this.currentSocket.on("disconnect", (reason) => {
         console.warn(`socket disconnected because: ${reason}`);
         if (reason.startsWith("io ")) {
-          console.warn("tryng to reconnect");
+          console.warn("tryng to reconnect", this.currentSocket);
+          
+          const { exp } = jwt.decode(token);
+          if ( Date.now()-180 >= exp*1000) {
+            console.warn("Expired token, reloading app");
+            window.location.reload();
+            return;
+          }
+
           this.currentSocket.connect();
         }        
       });
