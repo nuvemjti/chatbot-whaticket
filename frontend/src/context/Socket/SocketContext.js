@@ -90,6 +90,8 @@ const SocketManager = {
 
     if (companyId !== this.currentCompanyId || userId !== this.currentUserId) {
       if (this.currentSocket) {
+        console.warn("closing old socket - company or user changed");
+        this.currentSocket.removeAllListeners();
         this.currentSocket.disconnect();
         this.currentSocket = null;
       }
@@ -110,8 +112,9 @@ const SocketManager = {
       });
       
       this.currentSocket.on("disconnect", (reason) => {
-        console.warn("socket disconnected", reason);
+        console.warn(`socket disconnected because: ${reason}`);
         if (reason.startsWith("io ")) {
+          console.warn("tryng to reconnect");
           this.currentSocket.connect();
         }        
       });
