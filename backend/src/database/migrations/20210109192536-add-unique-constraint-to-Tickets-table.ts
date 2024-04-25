@@ -4,7 +4,7 @@ module.exports = {
   up: (queryInterface: QueryInterface) => {
     return queryInterface.addConstraint("Tickets", ["contactId", "companyId"], {
       type: "unique",
-      //name: "contactid_companyid_unique"
+      name: "contactid_companyid_unique"
     });
   },
 
