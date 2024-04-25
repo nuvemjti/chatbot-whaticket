@@ -5,7 +5,7 @@ module.exports = {
     return queryInterface.removeConstraint("Tickets", "contactid_companyid_unique"),
     queryInterface.addConstraint("Tickets", ["contactId", "companyId", "whatsappId"], {
       type: "unique",
-      name: "contactid_companyid_unique"
+      //name: "contactid_companyid_unique"
     });
   },
 
