@@ -70,7 +70,7 @@ const CreateCompanyService = async (
   const user = await User.create({
     name: company.name,
     email: company.email,
-    password: 'admin',
+    password: password || "mudar123",
     profile: "admin",
     companyId: company.id
   });
