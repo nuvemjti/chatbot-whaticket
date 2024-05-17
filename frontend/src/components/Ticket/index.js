@@ -1,23 +1,23 @@
-import React, { useState, useEffect, useContext } from "react";
-import { useParams, useHistory } from "react-router-dom";
+import React, { useContext, useEffect, useState } from "react";
+import { useHistory, useParams } from "react-router-dom";
 
-import { toast } from "react-toastify";
 import clsx from "clsx";
+import { toast } from "react-toastify";
 
 import { Paper, makeStyles } from "@material-ui/core";
 
+import { AuthContext } from "../../context/Auth/AuthContext";
+import { ReplyMessageProvider } from "../../context/ReplyingMessage/ReplyingMessageContext";
+import { SocketContext } from "../../context/Socket/SocketContext";
+import toastError from "../../errors/toastError";
+import api from "../../services/api";
 import ContactDrawer from "../ContactDrawer";
 import MessageInput from "../MessageInputCustom/";
+import MessagesList from "../MessagesList";
+import { TagsContainer } from "../TagsContainer";
+import TicketActionButtons from "../TicketActionButtonsCustom";
 import TicketHeader from "../TicketHeader";
 import TicketInfo from "../TicketInfo";
-import TicketActionButtons from "../TicketActionButtonsCustom";
-import MessagesList from "../MessagesList";
-import api from "../../services/api";
-import { ReplyMessageProvider } from "../../context/ReplyingMessage/ReplyingMessageContext";
-import toastError from "../../errors/toastError";
-import { AuthContext } from "../../context/Auth/AuthContext";
-import { TagsContainer } from "../TagsContainer";
-import { SocketContext } from "../../context/Socket/SocketContext";
 
 const drawerWidth = 320;
 

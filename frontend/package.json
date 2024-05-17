@@ -1,7 +1,7 @@
 {
   "name": "frontend",
   "version": "0.1.0",
-  "versionSystem": "4.6.5",
+  "versionSystem": "4.7.8",
   "nomeEmpresa": "PLW Design",
   "private": true,
   "dependencies": {
@@ -29,6 +29,7 @@
     "gn-api-sdk-node": "^3.0.2",
     "i18next": "^19.8.2",
     "i18next-browser-languagedetector": "^6.0.1",
+    "jsonwebtoken": "^9.0.2",
     "markdown-to-jsx": "^7.1.0",
     "material-ui-color": "^1.2.0",
     "mic-recorder-to-mp3": "^2.2.2",
@@ -63,6 +64,7 @@
     "use-debounce": "^7.0.0",
     "use-sound": "^2.0.1",
     "uuid": "^8.3.2",
+    "vcard-parser": "^1.0.0",
     "yup": "^0.32.8"
   },
   "scripts": {

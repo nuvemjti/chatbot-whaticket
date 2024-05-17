@@ -1,25 +1,24 @@
 import { Request, Response } from "express";
 import AppError from "../errors/AppError";
 
+import formatBody from "../helpers/Mustache";
 import SetTicketMessagesAsRead from "../helpers/SetTicketMessagesAsRead";
 import { getIO } from "../libs/socket";
 import Message from "../models/Message";
 import Queue from "../models/Queue";
 import User from "../models/User";
 import Whatsapp from "../models/Whatsapp";
-import formatBody from "../helpers/Mustache";
 
+import CreateOrUpdateContactService from "../services/ContactServices/CreateOrUpdateContactService";
 import ListMessagesService from "../services/MessageServices/ListMessagesService";
-import ShowTicketService from "../services/TicketServices/ShowTicketService";
 import FindOrCreateTicketService from "../services/TicketServices/FindOrCreateTicketService";
+import ShowTicketService from "../services/TicketServices/ShowTicketService";
 import UpdateTicketService from "../services/TicketServices/UpdateTicketService";
+import CheckContactNumber from "../services/WbotServices/CheckNumber";
 import DeleteWhatsAppMessage from "../services/WbotServices/DeleteWhatsAppMessage";
+import GetProfilePicUrl from "../services/WbotServices/GetProfilePicUrl";
 import SendWhatsAppMedia from "../services/WbotServices/SendWhatsAppMedia";
 import SendWhatsAppMessage from "../services/WbotServices/SendWhatsAppMessage";
-import CheckContactNumber from "../services/WbotServices/CheckNumber";
-import CheckIsValidContact from "../services/WbotServices/CheckIsValidContact";
-import GetProfilePicUrl from "../services/WbotServices/GetProfilePicUrl";
-import CreateOrUpdateContactService from "../services/ContactServices/CreateOrUpdateContactService";
 type IndexQuery = {
   pageNumber: string;
 };
@@ -70,6 +69,7 @@ export const store = async (req: Request, res: Response): Promise<Response> => {
 
   SetTicketMessagesAsRead(ticket);
 
+  console.log('bodyyyyyyyyyy:', body)
   if (medias) {
     await Promise.all(
       medias.map(async (media: Express.Multer.File, index) => {
@@ -105,6 +105,8 @@ export const send = async (req: Request, res: Response): Promise<Response> => {
   const { whatsappId } = req.params as unknown as { whatsappId: number };
   const messageData: MessageData = req.body;
   const medias = req.files as Express.Multer.File[];
+
+  console.log('messageData;', messageData)
 
   try {
     const whatsapp = await Whatsapp.findByPk(whatsappId);

@@ -1,9 +1,8 @@
-import React, { useState, useEffect, useReducer, useRef, useContext } from "react";
+import React, { useContext, useEffect, useReducer, useRef, useState } from "react";
 
-import { isSameDay, parseISO, format } from "date-fns";
 import clsx from "clsx";
+import { format, isSameDay, parseISO } from "date-fns";
 
-import { green } from "@material-ui/core/colors";
 import {
   Button,
   CircularProgress,
@@ -11,6 +10,7 @@ import {
   IconButton,
   makeStyles,
 } from "@material-ui/core";
+import { green } from "@material-ui/core/colors";
 
 import {
   AccessTime,
@@ -21,17 +21,18 @@ import {
   GetApp,
 } from "@material-ui/icons";
 
-import MarkdownWrapper from "../MarkdownWrapper";
-import ModalImageCors from "../ModalImageCors";
-import MessageOptionsMenu from "../MessageOptionsMenu";
 import whatsBackground from "../../assets/wa-background.png";
 import LocationPreview from "../LocationPreview";
+import MarkdownWrapper from "../MarkdownWrapper";
+import MessageOptionsMenu from "../MessageOptionsMenu";
+import ModalImageCors from "../ModalImageCors";
 
 import whatsBackgroundDark from "../../assets/wa-background-dark.png"; //DARK MODE PLW DESIGN//
 
-import api from "../../services/api";
-import toastError from "../../errors/toastError";
 import { SocketContext } from "../../context/Socket/SocketContext";
+import toastError from "../../errors/toastError";
+import api from "../../services/api";
+import VcardPreview from "./VcardPreview.jsx";
 
 const useStyles = makeStyles((theme) => ({
   messagesListWrapper: {
@@ -426,6 +427,7 @@ const MessagesList = ({ ticket, ticketId, isGroup }) => {
   };
 
   const checkMessageMedia = (message) => {
+    console.log('------',message.mediaType);
     if (message.mediaType === "locationMessage" && message.body.split('|').length >= 2) {
       let locationParts = message.body.split('|')
       let imageLocation = locationParts[0]
@@ -438,41 +440,42 @@ const MessagesList = ({ ticket, ticketId, isGroup }) => {
 
       return <LocationPreview image={imageLocation} link={linkLocation} description={descriptionLocation} />
     }
-    /* else if (message.mediaType === "vcard") {
-      let array = message.body.split("\n");
-      let obj = [];
-      let contact = "";
-      for (let index = 0; index < array.length; index++) {
-        const v = array[index];
-        let values = v.split(":");
-        for (let ind = 0; ind < values.length; ind++) {
-          if (values[ind].indexOf("+") !== -1) {
-            obj.push({ number: values[ind] });
-          }
-          if (values[ind].indexOf("FN") !== -1) {
-            contact = values[ind + 1];
-          }
-        }
+
+else if (message.mediaType === "vcard") {
+  let array = message.body.split("\n");
+  let obj = [];
+  let contact = "";
+  for (let index = 0; index < array.length; index++) {
+    const v = array[index];
+    let values = v.split(":");
+    for (let ind = 0; ind < values.length; ind++) {
+      if (values[ind].indexOf("+") !== -1) {
+        obj.push({ number: values[ind] });
       }
-      return <VcardPreview contact={contact} numbers={obj[0].number} />
-    } */
-    /*else if (message.mediaType === "multi_vcard") {
-      console.log("multi_vcard")
-      console.log(message)
-    	
-      if(message.body !== null && message.body !== "") {
-        let newBody = JSON.parse(message.body)
-        return (
-          <>
-            {
-            newBody.map(v => (
-              <VcardPreview contact={v.name} numbers={v.number} />
-            ))
-            }
-          </>
-        )
-      } else return (<></>)
-    }*/
+      if (values[ind].indexOf("FN") !== -1) {
+        contact = values[ind + 1];
+      }
+    }
+  }
+  return <VcardPreview contact={contact} numbers={obj[0].number} />
+} 
+else if (message.mediaType === "multi_vcard") {
+  console.log("multi_vcard")
+  console.log(message)
+  
+  if(message.body !== null && message.body !== "") {
+    let newBody = JSON.parse(message.body)
+    return (
+      <>
+        {
+        newBody.map(v => (
+          <VcardPreview contact={v.name} numbers={v.number} />
+        ))
+        }
+      </>
+    )
+  } else return (<></>)
+}
     else if (message.mediaType === "image") {
       return <ModalImageCors imageUrl={message.mediaUrl} />;
     } else if (message.mediaType === "audio") {
@@ -742,7 +745,7 @@ const MessagesList = ({ ticket, ticketId, isGroup }) => {
                 ) && checkMessageMedia(message)}
                 <div className={classes.textContentItem}>
                   {message.quotedMsg && renderQuotedMessage(message)}
-                  <MarkdownWrapper>{message.mediaType === "locationMessage" ? null : message.body}</MarkdownWrapper>
+                  <MarkdownWrapper message={message}>{message.mediaType === "locationMessage" ? null : message.body}</MarkdownWrapper>
                   <span className={classes.timestamp}>
 				    {message.isEdited && <span>Editada </span>}
                     {format(parseISO(message.createdAt), "HH:mm")}

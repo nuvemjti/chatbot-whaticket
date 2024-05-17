@@ -1,8 +1,10 @@
+import * as Sentry from "@sentry/node";
+import { writeFile } from "fs";
+import { head, isNil } from "lodash";
 import path, { join } from "path";
 import { promisify } from "util";
-import { readFile, writeFile } from "fs";
-import * as Sentry from "@sentry/node";
-import { isNil, isNull, head } from "lodash";
+
+import { map_msg } from "../../utils/global";
 
 import {
   downloadMediaMessage,
@@ -17,45 +19,45 @@ import {
   WASocket,
 } from "@whiskeysockets/baileys";
 import Contact from "../../models/Contact";
-import Ticket from "../../models/Ticket";
 import Message from "../../models/Message";
+import Ticket from "../../models/Ticket";
 
-import { getIO } from "../../libs/socket";
-import CreateMessageService from "../MessageServices/CreateMessageService";
-import { logger } from "../../utils/logger";
-import CreateOrUpdateContactService from "../ContactServices/CreateOrUpdateContactService";
-import FindOrCreateTicketService from "../TicketServices/FindOrCreateTicketService";
-import ShowWhatsAppService from "../WhatsappService/ShowWhatsAppService";
-import UpdateTicketService from "../TicketServices/UpdateTicketService";
-import formatBody from "../../helpers/Mustache";
-import { Store } from "../../libs/store";
-import TicketTraking from "../../models/TicketTraking";
-import UserRating from "../../models/UserRating";
-import SendWhatsAppMessage from "./SendWhatsAppMessage";
-import moment from "moment";
-import Queue from "../../models/Queue";
-import QueueOption from "../../models/QueueOption";
-import FindOrCreateATicketTrakingService from "../TicketServices/FindOrCreateATicketTrakingService";
-import VerifyCurrentSchedule from "../CompanyService/VerifyCurrentSchedule";
-import Campaign from "../../models/Campaign";
-import CampaignShipping from "../../models/CampaignShipping";
-import { Op } from "sequelize";
-import { campaignQueue, parseToMilliseconds, randomValue } from "../../queues";
-import User from "../../models/User";
-import Setting from "../../models/Setting";
-import { cacheLayer } from "../../libs/cache";
-import { provider } from "./providers";
-import { debounce } from "../../helpers/Debounce";
-import { ChatCompletionRequestMessage, Configuration, OpenAIApi } from "openai";
 import ffmpeg from "fluent-ffmpeg";
 import {
+  AudioConfig,
   SpeechConfig,
-  SpeechSynthesizer,
-  AudioConfig
+  SpeechSynthesizer
 } from "microsoft-cognitiveservices-speech-sdk";
-import typebotListener from "../TypebotServices/typebotListener";
+import moment from "moment";
+import { ChatCompletionRequestMessage, Configuration, OpenAIApi } from "openai";
+import { Op } from "sequelize";
+import { debounce } from "../../helpers/Debounce";
+import formatBody from "../../helpers/Mustache";
+import { cacheLayer } from "../../libs/cache";
+import { getIO } from "../../libs/socket";
+import { Store } from "../../libs/store";
+import Campaign from "../../models/Campaign";
+import CampaignShipping from "../../models/CampaignShipping";
+import Queue from "../../models/Queue";
 import QueueIntegrations from "../../models/QueueIntegrations";
+import QueueOption from "../../models/QueueOption";
+import Setting from "../../models/Setting";
+import TicketTraking from "../../models/TicketTraking";
+import User from "../../models/User";
+import UserRating from "../../models/UserRating";
+import { campaignQueue, parseToMilliseconds, randomValue } from "../../queues";
+import { logger } from "../../utils/logger";
+import VerifyCurrentSchedule from "../CompanyService/VerifyCurrentSchedule";
+import CreateOrUpdateContactService from "../ContactServices/CreateOrUpdateContactService";
+import CreateMessageService from "../MessageServices/CreateMessageService";
 import ShowQueueIntegrationService from "../QueueIntegrationServices/ShowQueueIntegrationService";
+import FindOrCreateATicketTrakingService from "../TicketServices/FindOrCreateATicketTrakingService";
+import FindOrCreateTicketService from "../TicketServices/FindOrCreateTicketService";
+import UpdateTicketService from "../TicketServices/UpdateTicketService";
+import typebotListener from "../TypebotServices/typebotListener";
+import ShowWhatsAppService from "../WhatsappService/ShowWhatsAppService";
+import { provider } from "./providers";
+import SendWhatsAppMessage from "./SendWhatsAppMessage";
 
 const request = require("request");
 
@@ -327,7 +329,7 @@ export const getBodyMessage = (msg: proto.IWebMessageInfo): string | null => {
 
     const types = {
       conversation: msg?.message?.conversation,
-	  editedMessage: msg?.message?.editedMessage?.message?.protocolMessage?.editedMessage?.conversation,
+      editedMessage: msg?.message?.editedMessage?.message?.protocolMessage?.editedMessage?.conversation,
       imageMessage: msg.message?.imageMessage?.caption,
       videoMessage: msg.message?.videoMessage?.caption,
       extendedTextMessage: msg.message?.extendedTextMessage?.text,
@@ -704,6 +706,7 @@ const handleOpenAi = async (
     }
 
     if (prompt.voice === "texto") {
+      console.log('responseVoice', response)
       const sentMessage = await wbot.sendMessage(msg.key.remoteJid!, {
         text: response!
       });
@@ -769,6 +772,7 @@ const handleOpenAi = async (
         .trim();
     }
     if (prompt.voice === "texto") {
+      console.log('responseVoice2', response)
       const sentMessage = await wbot.sendMessage(msg.key.remoteJid!, {
         text: response!
       });
@@ -843,7 +847,7 @@ const verifyMediaMessage = async (
   }
 
   const body = getBodyMessage(msg);
-  
+
 
   const messageData = {
     id: msg.key.id,
@@ -869,6 +873,7 @@ const verifyMediaMessage = async (
     messageData,
     companyId: ticket.companyId,
   });
+
 
   if (!msg.key.fromMe && ticket.status === "closed") {
     await ticket.update({ status: "pending" });
@@ -924,12 +929,13 @@ export const verifyMessage = async (
     remoteJid: msg.key.remoteJid,
     participant: msg.key.participant,
     dataJson: JSON.stringify(msg),
-	isEdited: isEdited,
+    isEdited: isEdited,
   };
 
   await ticket.update({
     lastMessage: body
   });
+
 
   await CreateMessageService({ messageData, companyId: ticket.companyId });
 
@@ -972,7 +978,7 @@ const isValidMsg = (msg: proto.IWebMessageInfo): boolean => {
     const ifType =
       msgType === "conversation" ||
       msgType === "extendedTextMessage" ||
-	  msgType === "editedMessage" ||
+      msgType === "editedMessage" ||
       msgType === "audioMessage" ||
       msgType === "videoMessage" ||
       msgType === "imageMessage" ||
@@ -1013,7 +1019,6 @@ ${JSON.stringify(msg?.message)}`);
 const Push = (msg: proto.IWebMessageInfo) => {
   return msg.pushName;
 }
-
 const verifyQueue = async (
   wbot: Session,
   msg: proto.IWebMessageInfo,
@@ -1042,6 +1047,7 @@ const verifyQueue = async (
     if (greetingMessage.length > 1 && sendGreetingMessageOneQueues?.value === "enabled") {
       const body = formatBody(`${greetingMessage}`, contact);
 
+      console.log('body2', body)
       await wbot.sendMessage(
         `${contact.number}@${ticket.isGroup ? "g.us" : "s.whatsapp.net"}`,
         {
@@ -1112,6 +1118,10 @@ const verifyQueue = async (
 
 
 
+  /**
+   * recebe as mensagens dos usuários e envia as opções de fila
+   * tratamento de mensagens para resposta aos usuarios apartir do chatbot/fila.         
+   */
   const botText = async () => {
     let options = "";
 
@@ -1123,13 +1133,30 @@ const verifyQueue = async (
     const textMessage = {
       text: formatBody(`\u200e${greetingMessage}\n\n${options}`, contact),
     };
+    let lastMsg = map_msg.get(contact.number)
+    let invalidOption = "Opção inválida, por favor, escolha uma opção válida."
 
-    const sendMsg = await wbot.sendMessage(
-      `${contact.number}@${ticket.isGroup ? "g.us" : "s.whatsapp.net"}`,
-      textMessage
-    );
+    // console.log('getBodyMessage(msg)', getBodyMessage(msg))
+    console.log('textMessage2', textMessage)
+    // map_msg.set(contact.number, lastMsg);
+    if (!lastMsg?.msg || getBodyMessage(msg).includes('#') || lastMsg.msg !== textMessage.text && !lastMsg.invalid_option) {
+      const sendMsg = await wbot.sendMessage(
+        `${contact.number}@${ticket.isGroup ? "g.us" : "s.whatsapp.net"}`,
+        textMessage
+      );
+      map_msg.set(contact.number, { msg: textMessage.text, invalid_option: false });
+      await verifyMessage(sendMsg, ticket, ticket.contact);
 
-    await verifyMessage(sendMsg, ticket, ticket.contact);
+    } else if (lastMsg.msg !== invalidOption && !lastMsg.invalid_option) {
+      textMessage.text = invalidOption
+      const sendMsg = await wbot.sendMessage(
+        `${contact.number}@${ticket.isGroup ? "g.us" : "s.whatsapp.net"}`,
+        textMessage
+      );
+      map_msg.set(contact.number, { msg: textMessage.text, invalid_option: true });
+      await verifyMessage(sendMsg, ticket, ticket.contact);
+    }
+
   };
 
   if (choosenQueue) {
@@ -1160,8 +1187,11 @@ const verifyQueue = async (
         const startTime = moment(schedule.startTime, "HH:mm");
         const endTime = moment(schedule.endTime, "HH:mm");
 
+
+
         if (now.isBefore(startTime) || now.isAfter(endTime)) {
           const body = formatBody(`\u200e ${queue.outOfHoursMessage}\n\n*[ # ]* - Voltar ao Menu Principal`, ticket.contact);
+          console.log('body222', body)
           const sentMessage = await wbot.sendMessage(
             `${contact.number}@${ticket.isGroup ? "g.us" : "s.whatsapp.net"}`, {
             text: body,
@@ -1213,6 +1243,7 @@ const verifyQueue = async (
       const body = formatBody(`\u200e${choosenQueue.greetingMessage}`, ticket.contact
       );
       if (choosenQueue.greetingMessage) {
+        console.log('body33333333', body)
         const sentMessage = await wbot.sendMessage(
           `${contact.number}@${ticket.isGroup ? "g.us" : "s.whatsapp.net"}`, {
           text: body,
@@ -1358,6 +1389,7 @@ const handleChartbot = async (ticket: Ticket, msg: WAMessage, wbot: Session, don
 
   const messageBody = getBodyMessage(msg);
 
+
   if (messageBody == "#") {
     // voltar para o menu inicial
     await ticket.update({ queueOptionId: null, chatbot: false, queueId: null });
@@ -1372,6 +1404,8 @@ const handleChartbot = async (ticket: Ticket, msg: WAMessage, wbot: Session, don
 
     // escolheu uma opção
   } else if (!isNil(queue) && !isNil(ticket.queueOptionId)) {
+
+
     const count = await QueueOption.count({
       where: { parentId: ticket.queueOptionId },
     });
@@ -1403,6 +1437,7 @@ const handleChartbot = async (ticket: Ticket, msg: WAMessage, wbot: Session, don
   await ticket.reload();
 
   if (!isNil(queue) && isNil(ticket.queueOptionId)) {
+
 
     const queueOptions = await QueueOption.findAll({
       where: { queueId: ticket.queueId, parentId: null },
@@ -1494,6 +1529,7 @@ const handleChartbot = async (ticket: Ticket, msg: WAMessage, wbot: Session, don
         text: formatBody(`\u200e${queue.greetingMessage}\n\n${options}`, ticket.contact),
       };
 
+      console.log('textMessage5555555555555', textMessage)
       const sendMsg = await wbot.sendMessage(
         `${ticket.contact.number}@${ticket.isGroup ? "g.us" : "s.whatsapp.net"}`,
         textMessage
@@ -1612,6 +1648,7 @@ const handleChartbot = async (ticket: Ticket, msg: WAMessage, wbot: Session, don
           text: formatBody(`\u200e${currentOption.message}\n\n${options}`, ticket.contact),
         };
 
+        console.log('textMessage6666666666', textMessage)
         const sendMsg = await wbot.sendMessage(
           `${ticket.contact.number}@${ticket.isGroup ? "g.us" : "s.whatsapp.net"}`,
           textMessage
@@ -1774,6 +1811,7 @@ const handleMessage = async (
 
     // voltar para o menu inicial
 
+
     if (bodyMessage == "#") {
       await ticket.update({
         queueOptionId: null,
@@ -1867,6 +1905,7 @@ const handleMessage = async (
         ) {
           const body = `\u200e ${whatsapp.outOfHoursMessage}`;
 
+          console.log('body9341023', body)
           const debouncedSentMessage = debounce(
             async () => {
               await wbot.sendMessage(
@@ -1884,12 +1923,14 @@ const handleMessage = async (
           return;
         }
 
-
+        console.log('bodyMaaaaaaa1111aaaaaessage:', bodyMessage);
         if (scheduleType.value === "queue" && ticket.queueId !== null) {
 
           /**
            * Tratamento para envio de mensagem quando a fila está fora do expediente
            */
+
+
           const queue = await Queue.findByPk(ticket.queueId);
 
           const { schedules }: any = queue;
@@ -1919,6 +1960,7 @@ const handleMessage = async (
 
             if (now.isBefore(startTime) || now.isAfter(endTime)) {
               const body = `${queue.outOfHoursMessage}`;
+              console.log('body:23801', body)
               const debouncedSentMessage = debounce(
                 async () => {
                   await wbot.sendMessage(
@@ -2003,7 +2045,7 @@ const handleMessage = async (
       !ticket.isGroup &&
       !ticket.userId &&
       ticket.integrationId &&
-      ticket.useIntegration && 
+      ticket.useIntegration &&
       ticket.queue
     ) {
 
@@ -2071,6 +2113,7 @@ const handleMessage = async (
 
           if (now.isBefore(startTime) || now.isAfter(endTime)) {
             const body = queue.outOfHoursMessage;
+            console.log('body158964153', body)
             const debouncedSentMessage = debounce(
               async () => {
                 await wbot.sendMessage(
@@ -2112,6 +2155,7 @@ const handleMessage = async (
 
       if (whatsapp.greetingMessage) {
 
+        console.log('whatsapp.greetingMessage', whatsapp.greetingMessage)
         const debouncedSentMessage = debounce(
           async () => {
             await wbot.sendMessage(
@@ -2284,6 +2328,8 @@ const wbotMessageListener = async (wbot: Session, companyId: number): Promise<vo
         });
 
         if (!messageExists) {
+
+          // console.log('body-------------------:', message);
           await handleMessage(message, wbot, companyId);
           await verifyRecentCampaign(message, companyId);
           await verifyCampaignMessageAndCloseTicket(message, companyId);
@@ -2309,4 +2355,5 @@ const wbotMessageListener = async (wbot: Session, companyId: number): Promise<vo
   }
 };
 
-export { wbotMessageListener, handleMessage };
+export { handleMessage, wbotMessageListener };
+

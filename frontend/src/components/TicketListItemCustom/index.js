@@ -1,41 +1,36 @@
-import React, { useState, useEffect, useRef, useContext } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 
-import { useHistory, useParams } from "react-router-dom";
-import { parseISO, format, isSameDay } from "date-fns";
 import clsx from "clsx";
+import { format, isSameDay, parseISO } from "date-fns";
+import { useHistory, useParams } from "react-router-dom";
 
-import { makeStyles } from "@material-ui/core/styles";
-import { green, grey, red, blue } from "@material-ui/core/colors";
-import ListItem from "@material-ui/core/ListItem";
-import ListItemText from "@material-ui/core/ListItemText";
-import ListItemAvatar from "@material-ui/core/ListItemAvatar";
-import ListItemSecondaryAction from "@material-ui/core/ListItemSecondaryAction";
-import Typography from "@material-ui/core/Typography";
 import Avatar from "@material-ui/core/Avatar";
-import Divider from "@material-ui/core/Divider";
 import Badge from "@material-ui/core/Badge";
 import Box from "@material-ui/core/Box";
+import Divider from "@material-ui/core/Divider";
+import ListItem from "@material-ui/core/ListItem";
+import ListItemAvatar from "@material-ui/core/ListItemAvatar";
+import ListItemSecondaryAction from "@material-ui/core/ListItemSecondaryAction";
+import ListItemText from "@material-ui/core/ListItemText";
+import Typography from "@material-ui/core/Typography";
+import { blue, green, grey } from "@material-ui/core/colors";
+import { makeStyles } from "@material-ui/core/styles";
 
 import { i18n } from "../../translate/i18n";
 
-import api from "../../services/api";
-import ButtonWithSpinner from "../ButtonWithSpinner";
-import MarkdownWrapper from "../MarkdownWrapper";
 import { Tooltip } from "@material-ui/core";
+import { v4 as uuidv4 } from "uuid";
 import { AuthContext } from "../../context/Auth/AuthContext";
 import { TicketsContext } from "../../context/Tickets/TicketsContext";
 import toastError from "../../errors/toastError";
-import { v4 as uuidv4 } from "uuid";
+import api from "../../services/api";
+import ButtonWithSpinner from "../ButtonWithSpinner";
+import MarkdownWrapper from "../MarkdownWrapper";
 
-import RoomIcon from '@material-ui/icons/Room';
-import WhatsAppIcon from "@material-ui/icons/WhatsApp";
 import AndroidIcon from "@material-ui/icons/Android";
 import VisibilityIcon from "@material-ui/icons/Visibility";
-import TicketMessagesDialog from "../TicketMessagesDialog";
-import DoneIcon from '@material-ui/icons/Done';
-import ClearOutlinedIcon from '@material-ui/icons/ClearOutlined';
-import contrastColor from "../../helpers/contrastColor";
 import ContactTag from "../ContactTag";
+import TicketMessagesDialog from "../TicketMessagesDialog";
 
 const useStyles = makeStyles((theme) => ({
   ticket: {
@@ -446,7 +441,10 @@ const useStyles = makeStyles((theme) => ({
                 component="span"
                 variant="body2"
                 color="textSecondary"
-              > {ticket.lastMessage.includes('data:image/png;base64') ? <MarkdownWrapper> Localização</MarkdownWrapper> : <MarkdownWrapper>{ticket.lastMessage}</MarkdownWrapper>}
+              > {ticket.lastMessage && ticket.lastMessage.includes('data:image/png;base64') ? 
+              <MarkdownWrapper> Localização</MarkdownWrapper> : 
+              <MarkdownWrapper>{ticket.lastMessage}</MarkdownWrapper>
+            }
                 <span className={classes.secondaryContentSecond} >
                   {ticket?.whatsapp?.name ? <Badge className={classes.connectionTag}>{ticket?.whatsapp?.name?.toUpperCase()}</Badge> : <br></br>}
                   {ticketUser ? <Badge style={{ backgroundColor: "#000000" }} className={classes.connectionTag}>{ticketUser}</Badge> : <br></br>}
