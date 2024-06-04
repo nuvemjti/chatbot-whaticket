@@ -173,6 +173,7 @@ const messages = {
         },
         buttons: {
           import: "Importar Contatos",
+		  importSheet: "Import. Excel",
           add: "Adicionar Contato",
           export: "Exportar Contatos",
           delete: "Excluir Todos Contatos"
@@ -292,6 +293,9 @@ const messages = {
           add: "Adicionar fila",
           edit: "Editar fila",
         },
+		confirmationModal: {
+		  "deleteTitle": "Excluir",
+		},
         form: {
           name: "Nome",
           color: "Cor",
@@ -307,6 +311,7 @@ const messages = {
           okAdd: "Adicionar",
           okEdit: "Salvar",
           cancel: "Cancelar",
+		  attach: "Anexar Arquivo",
         },
       },
       userModal: {

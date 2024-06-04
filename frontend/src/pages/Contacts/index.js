@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useReducer, useContext } from "react";
+import React, { useState, useEffect, useReducer, useContext, useRef } from "react";
 
 import { toast } from "react-toastify";
 import { useHistory } from "react-router-dom";
@@ -108,6 +108,7 @@ const Contacts = () => {
   const [deletingContact, setDeletingContact] = useState(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [hasMore, setHasMore] = useState(false);
+  const fileUploadRef = useRef(null);
 
   const socketManager = useContext(SocketContext);
 
@@ -208,10 +209,20 @@ const Contacts = () => {
     setSearchParam("");
     setPageNumber(1);
   };
-
+  
   const handleimportContact = async () => {
     try {
-      await api.post("/contacts/import");
+      if (!!fileUploadRef.current.files[0]) {
+        const formData = new FormData();
+        formData.append("file", fileUploadRef.current.files[0]);
+        await api.request({
+          url: `/contacts/upload`,
+          method: "POST",
+          data: formData,
+        });
+      } else {
+        await api.post("/contacts/import");
+      }
       history.go(0);
     } catch (err) {
       toastError(err);
@@ -289,6 +300,16 @@ const Contacts = () => {
             {i18n.t("contacts.buttons.import")}
           </Button>
           <Button
+          variant="contained"
+          color="primary"
+          onClick={() => {
+            fileUploadRef.current.value = null;
+            fileUploadRef.current.click();
+          }}
+      >
+        {i18n.t("contacts.buttons.importSheet")}
+      </Button>
+          <Button
             variant="contained"
             color="primary"
             onClick={handleOpenContactModal}
@@ -309,6 +330,19 @@ const Contacts = () => {
         variant="outlined"
         onScroll={handleScroll}
       >
+        <>
+          <input
+              style={{ display: "none" }}
+              id="upload"
+              name="file"
+              type="file"
+              accept=".xls,.xlsx"
+              onChange={() => {
+                setConfirmOpen(true);
+              }}
+              ref={fileUploadRef}
+          />
+        </>
         <Table size="small">
           <TableHead>
             <TableRow>
