@@ -58,6 +58,7 @@ import typebotListener from "../TypebotServices/typebotListener";
 import ShowWhatsAppService from "../WhatsappService/ShowWhatsAppService";
 import { provider } from "./providers";
 import SendWhatsAppMessage from "./SendWhatsAppMessage";
+import { getMessageOptions } from "./SendWhatsAppMedia";
 
 const request = require("request");
 
@@ -340,7 +341,7 @@ export const getBodyMessage = (msg: proto.IWebMessageInfo): string | null => {
       viewOnceMessage: getBodyButton(msg) || msg.message?.listResponseMessage?.singleSelectReply?.selectedRowId,
       stickerMessage: "sticker",
       contactMessage: msg.message?.contactMessage?.vcard,
-      contactsArrayMessage: "varios contatos",
+      contactsArrayMessage: (msg.message?.contactsArrayMessage?.contacts) && contactsArrayMessageGet(msg),
       //locationMessage: `Latitude: ${msg.message.locationMessage?.degreesLatitude} - Longitude: ${msg.message.locationMessage?.degreesLongitude}`,
       locationMessage: msgLocation(
         msg.message?.locationMessage?.jpegThumbnail,
@@ -1061,6 +1062,20 @@ const verifyQueue = async (
     if (firstQueue?.options) {
       chatbot = firstQueue.options.length > 0;
     }
+	
+	//envio de midia
+    if (firstQueue.mediaPath !== null) {
+      console.log(firstQueue.mediaPath)
+
+      const filePath = path.resolve("public", firstQueue.mediaPath);
+
+
+      const optionsMsg = await getMessageOptions(firstQueue.mediaName, filePath);
+
+      let sentMessage = await wbot.sendMessage(`${ticket.contact.number}@${ticket.isGroup ? "g.us" : "s.whatsapp.net"}`, { ...optionsMsg });
+
+      await verifyMediaMessage(sentMessage, ticket, contact);
+    }
 
     //inicia integração dialogflow/n8n
     if (
@@ -1135,16 +1150,21 @@ const verifyQueue = async (
     };
     let lastMsg = map_msg.get(contact.number)
     let invalidOption = "Opção inválida, por favor, escolha uma opção válida."
+    
 
     // console.log('getBodyMessage(msg)', getBodyMessage(msg))
     console.log('textMessage2', textMessage)
+     console.log("lastMsg::::::::::::':", contact.number)
     // map_msg.set(contact.number, lastMsg);
-    if (!lastMsg?.msg || getBodyMessage(msg).includes('#') || lastMsg.msg !== textMessage.text && !lastMsg.invalid_option) {
+    if (!lastMsg?.msg || getBodyMessage(msg).includes('#') || textMessage.text === 'concluido' || lastMsg.msg !== textMessage.text && !lastMsg.invalid_option) {
       const sendMsg = await wbot.sendMessage(
         `${contact.number}@${ticket.isGroup ? "g.us" : "s.whatsapp.net"}`,
         textMessage
       );
-      map_msg.set(contact.number, { msg: textMessage.text, invalid_option: false });
+      lastMsg ?? (lastMsg = {});
+      lastMsg.msg = textMessage.text;
+      lastMsg.invalid_option = false;
+      map_msg.set(contact.number, lastMsg);
       await verifyMessage(sendMsg, ticket, ticket.contact);
 
     } else if (lastMsg.msg !== invalidOption && !lastMsg.invalid_option) {
@@ -1153,7 +1173,10 @@ const verifyQueue = async (
         `${contact.number}@${ticket.isGroup ? "g.us" : "s.whatsapp.net"}`,
         textMessage
       );
-      map_msg.set(contact.number, { msg: textMessage.text, invalid_option: true });
+      lastMsg ?? (lastMsg = {});
+      lastMsg.invalid_option = true;
+      lastMsg.msg = textMessage.text;
+      map_msg.set(contact.number, lastMsg);
       await verifyMessage(sendMsg, ticket, ticket.contact);
     }
 
@@ -1250,6 +1273,15 @@ const verifyQueue = async (
         }
         );
         await verifyMessage(sentMessage, ticket, contact);
+      }
+	        if (choosenQueue.mediaPath !== null && choosenQueue.mediaPath !== "") {
+        const filePath = path.resolve("public", choosenQueue.mediaPath);
+
+        const optionsMsg = await getMessageOptions(choosenQueue.mediaName, filePath);
+
+        let sentMessage = await wbot.sendMessage(`${ticket.contact.number}@${ticket.isGroup ? "g.us" : "s.whatsapp.net"}`, { ...optionsMsg });
+
+        await verifyMediaMessage(sentMessage, ticket, contact);
       }
     }
 
@@ -1655,6 +1687,17 @@ const handleChartbot = async (ticket: Ticket, msg: WAMessage, wbot: Session, don
         );
 
         await verifyMessage(sendMsg, ticket, ticket.contact);
+		        if (currentOption.mediaPath !== null && currentOption.mediaPath !== "")  {
+
+          const filePath = path.resolve("public", currentOption.mediaPath);
+
+
+          const optionsMsg = await getMessageOptions(currentOption.mediaName, filePath);
+
+          let sentMessage = await wbot.sendMessage(`${ticket.contact.number}@${ticket.isGroup ? "g.us" : "s.whatsapp.net"}`, { ...optionsMsg });
+
+          await verifyMediaMessage(sentMessage, ticket, ticket.contact);
+        }
       };
 
       if (buttonActive.value === "list") {
