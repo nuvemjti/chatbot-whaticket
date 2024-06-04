@@ -104,7 +104,15 @@ const useStyles = makeStyles((theme) => ({
     justifySelf: "flex-end",
     textAlign: "right",
     position: "relative",
-    top: -21
+    top: -21,
+    background: '#333333',
+    color: '#ffffff',
+    border: '1px solid #3a3b6c',
+    borderRadius: 5,
+    padding: 1,
+    paddingLeft: 5,
+    paddingRight: 5,
+    fontSize: '0.9em',
   },
 
   closedBadge: {
@@ -188,7 +196,7 @@ const useStyles = makeStyles((theme) => ({
   const [ticketQueueColor, setTicketQueueColor] = useState(null);
   const [tag, setTag] = useState([]);
   const [whatsAppName, setWhatsAppName] = useState(null);
-
+  const [lastInteractionLabel, setLastInteractionLabel] = useState('');
   const [openTicketMessageDialog, setOpenTicketMessageDialog] = useState(false);
   const { ticketId } = useParams();
   const isMounted = useRef(true);
@@ -237,6 +245,58 @@ const useStyles = makeStyles((theme) => ({
     }
     history.push(`/tickets/`);
   };
+
+  useEffect(() => {
+    const renderLastInteractionLabel = () => {
+      let labelColor = '';
+      let labelText = '';
+
+      if (!ticket.lastMessage) return '';
+
+      const lastInteractionDate = parseISO(ticket.updatedAt);
+      const currentDate = new Date();
+      const timeDifference = currentDate - lastInteractionDate;
+      const hoursDifference = Math.floor(timeDifference / (1000 * 60 * 60));
+      const minutesDifference = Math.floor(timeDifference / (1000 * 60));
+
+
+      if (minutesDifference >= 3 && minutesDifference <= 10) {
+        labelText = `(${minutesDifference} m atrás)`;
+        labelColor = 'green';
+      } else if (minutesDifference >= 30 && minutesDifference < 60) {
+        labelText = `(${minutesDifference} m atrás)`;
+        labelColor = 'Orange';
+      } else if (minutesDifference > 60  && hoursDifference < 24) {
+        labelText = `(${hoursDifference} h atrás)`;
+        labelColor = 'red';
+      } else if (hoursDifference >= 24) {
+        labelText = `(${Math.floor(hoursDifference / 24)} dias atrás)`;
+        labelColor = 'red';
+      }
+
+
+      return { labelText, labelColor };
+    };
+
+    // Função para atualizar o estado do componente
+    const updateLastInteractionLabel = () => {
+      const { labelText, labelColor } = renderLastInteractionLabel();
+      setLastInteractionLabel(
+        <Badge
+          className={classes.lastInteractionLabel}
+          style={{ color: labelColor }}
+        >
+          {labelText}
+        </Badge>
+      );
+      // Agendando a próxima atualização após 30 segundos
+      setTimeout(updateLastInteractionLabel, 30 * 1000);
+    };
+
+    // Inicializando a primeira atualização
+    updateLastInteractionLabel();
+
+  }, [ticket]); // Executando apenas uma vez ao montar o componente
 
   const handleReopenTicket = async (id) => {
     setLoading(true);
@@ -404,13 +464,16 @@ const useStyles = makeStyles((theme) => ({
 
           primary={
             <span className={classes.contactNameWrapper}>
-              <Typography
-                noWrap
-                component="span"
-                variant="body2"
-                color="textPrimary"
-              >
-                {ticket.contact.name}
+            <Typography
+            noWrap
+            component='span'
+            variant='body2'
+            color='textPrimary'
+          >
+            <strong>{ticket.contact.name} {lastInteractionLabel}</strong>
+        <ListItemSecondaryAction>
+          <Box className={classes.ticketInfo1}>{renderTicketInfo()}</Box>
+        </ListItemSecondaryAction>
                 {profile === "admin" && (
                   <Tooltip title="Espiar Conversa">
                     <VisibilityIcon
@@ -426,10 +489,7 @@ const useStyles = makeStyles((theme) => ({
                   </Tooltip>
                 )}
               </Typography>
-              <ListItemSecondaryAction>
-                <Box className={classes.ticketInfo1}>{renderTicketInfo()}</Box>
-              </ListItemSecondaryAction>
-            </span>
+        </span>
 
           }
           secondary={
