@@ -93,6 +93,44 @@ export const isNumeric = (value: string) => /^-?\d+$/.test(value);
 
 const writeFileAsync = promisify(writeFile);
 
+const multVecardGet = function (param: any) {
+  let output = " "
+
+  let name = param.split("\n")[2].replace(";;;", "\n").replace('N:', "").replace(";", "").replace(";", " ").replace(";;", " ").replace("\n", "")
+  let inicio = param.split("\n")[4].indexOf('=')
+  let fim = param.split("\n")[4].indexOf(':')
+  let contact = param.split("\n")[4].substring(inicio + 1, fim).replace(";", "")
+  let contactSemWhats = param.split("\n")[4].replace("item1.TEL:", "")
+
+  if (contact != "item1.TEL") {
+    output = output + name + ": 📞" + contact + "" + "\n"
+  } else
+    output = output + name + ": 📞" + contactSemWhats + "" + "\n"
+  return output
+}
+
+const contactsArrayMessageGet = (msg: any,) => {
+  let contactsArray = msg.message?.contactsArrayMessage?.contacts
+  let vcardMulti = contactsArray.map(function (item, indice) {
+    return item.vcard;
+  });
+
+  let bodymessage = ``
+  vcardMulti.forEach(function (vcard, indice) {
+    bodymessage += vcard + "\n\n" + ""
+  })
+
+  let contacts = bodymessage.split("BEGIN:")
+
+  contacts.shift()
+  let finalContacts = ""
+  for (let contact of contacts) {
+    finalContacts = finalContacts + multVecardGet(contact)
+  }
+
+  return finalContacts
+}
+
 const getTypeMessage = (msg: proto.IWebMessageInfo): string => {
   return getContentType(msg.message);
 };

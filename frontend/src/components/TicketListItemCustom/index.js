@@ -202,6 +202,7 @@ const useStyles = makeStyles((theme) => ({
   const isMounted = useRef(true);
   const { setCurrentTicket } = useContext(TicketsContext);
   const { user } = useContext(AuthContext);
+  const [verpreview, setverpreview] = useState(false);
   const { profile } = user;
 
   useEffect(() => {
@@ -505,6 +506,23 @@ const useStyles = makeStyles((theme) => ({
               <MarkdownWrapper> Localização</MarkdownWrapper> : 
               <MarkdownWrapper>{ticket.lastMessage}</MarkdownWrapper>
             }
+
+            {ticket.lastMessage && verpreview ? (
+              <>
+                {ticket.lastMessage.includes('VCARD') ? (
+                  <MarkdownWrapper>Novo Contato recebido</MarkdownWrapper>
+                ) : ticket.lastMessage.includes('data:image') ? (
+                  <MarkdownWrapper>Localização recebida</MarkdownWrapper>
+                ) : (
+                  <MarkdownWrapper>
+                    {ticket.lastMessage.slice(0, 20) + '...'}
+                  </MarkdownWrapper>
+                )}
+              </>
+            ) : (
+              <MarkdownWrapper>---</MarkdownWrapper>
+            )}
+
                 <span className={classes.secondaryContentSecond} >
                   {ticket?.whatsapp?.name ? <Badge className={classes.connectionTag}>{ticket?.whatsapp?.name?.toUpperCase()}</Badge> : <br></br>}
                   {ticketUser ? <Badge style={{ backgroundColor: "#000000" }} className={classes.connectionTag}>{ticketUser}</Badge> : <br></br>}
