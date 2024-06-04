@@ -11,7 +11,8 @@ import TextField from "@material-ui/core/TextField";
 import FormHelperText from "@material-ui/core/FormHelperText";
 import Typography from "@material-ui/core/Typography";
 import { Button } from "@material-ui/core";
-
+import MobileFriendlyIcon from '@material-ui/icons/MobileFriendly';
+import StoreIcon from '@material-ui/icons/Store';
 import SpeedIcon from "@material-ui/icons/Speed";
 import GroupIcon from "@material-ui/icons/Group";
 import AssignmentIcon from "@material-ui/icons/Assignment";
@@ -123,6 +124,24 @@ const useStyles = makeStyles((theme) => ({
     overflow: "auto",
     flexDirection: "column",
     height: "100%",
+  },
+    card0: {
+    padding: theme.spacing(2),
+    display: "flex",
+    overflow: "auto",
+    flexDirection: "column",
+    height: "100%",
+    backgroundColor: "#9400D3",
+    color: "#eee",
+  },
+      card00: {
+    padding: theme.spacing(2),
+    display: "flex",
+    overflow: "auto",
+    flexDirection: "column",
+    height: "100%",
+    backgroundColor: "#8B1C62",
+    color: "#eee",
   },
   card1: {
     padding: theme.spacing(2),
@@ -396,6 +415,114 @@ const Dashboard = () => {
       <Container maxWidth="lg" className={classes.container}>
         <Grid container spacing={3} justifyContent="flex-end">
 		
+				  {/* FILTROS */}
+          <Grid item xs={12} sm={6} md={4}>
+            <FormControl className={classes.selectContainer}>
+              <InputLabel id="period-selector-label">Tipo de Filtro</InputLabel>
+              <Select
+                labelId="period-selector-label"
+                value={filterType}
+                onChange={(e) => handleChangeFilterType(e.target.value)}
+              >
+                <MenuItem value={1}>Filtro por Data</MenuItem>
+                <MenuItem value={2}>Filtro por Período</MenuItem>
+              </Select>
+              <FormHelperText>Selecione o período desejado</FormHelperText>
+            </FormControl>
+          </Grid>
+
+          {renderFilters()}
+
+          {/* BOTAO FILTRAR */}
+          <Grid item xs={12} className={classes.alignRight}>
+            <ButtonWithSpinner
+              loading={loading}
+              onClick={() => fetchData()}
+              variant="contained"
+              color="primary"
+            >
+              Filtrar
+            </ButtonWithSpinner>
+          </Grid>
+		
+		{/* CONEXÕES */}
+		 {user.super && (	  
+		  <Grid item xs={12} sm={6} md={4}>
+            <Paper
+              className={classes.card0}
+              style={{ overflow: "hidden" }}
+              elevation={4}
+            >
+              <Grid container spacing={3}>
+                <Grid item xs={8}>
+                  <Typography
+                    component="h3"
+                    variant="h6"
+                    paragraph
+                  >
+                    Conexões Ativas
+                  </Typography>
+                  <Grid item>
+                    <Typography
+                      component="h1"
+                      variant="h4"
+                    >
+                      {counters.totalWhatsappSessions}
+                    </Typography>
+                  </Grid>
+                </Grid>
+                <Grid item xs={2}>
+                  <MobileFriendlyIcon
+                    style={{
+                      fontSize: 100,
+                      color: "#fff",
+                    }}
+                  />
+                </Grid>
+              </Grid>
+            </Paper>
+          </Grid>
+		  )}
+		
+		  
+		 {/* EMPRESAS */}
+		 {user.super && (
+          <Grid item xs={12} sm={6} md={4}>
+            <Paper
+              className={classes.card00}
+              style={{ overflow: "hidden" }}
+              elevation={4}
+            >
+              <Grid container spacing={3}>
+                <Grid item xs={8}>
+                  <Typography
+                    component="h3"
+                    variant="h6"
+                    paragraph
+                  >
+                    Empresas
+                  </Typography>
+                  <Grid item>
+                    <Typography
+                      component="h1"
+                      variant="h4"
+                    >
+                      {counters.totalCompanies}
+                    </Typography>
+                  </Grid>
+                </Grid>
+                <Grid item xs={2}>
+                  <StoreIcon
+                    style={{
+                      fontSize: 100,
+                      color: "#FF34B3",
+                    }}
+                  />
+                </Grid>
+              </Grid>
+            </Paper>
+          </Grid>
+		  )}
 
           {/* EM ATENDIMENTO */}
           <Grid item xs={12} sm={6} md={4}>
@@ -661,36 +788,7 @@ const Dashboard = () => {
               </Grid>
             </Paper>
           </Grid>
-		  
-		  {/* FILTROS */}
-          <Grid item xs={12} sm={6} md={4}>
-            <FormControl className={classes.selectContainer}>
-              <InputLabel id="period-selector-label">Tipo de Filtro</InputLabel>
-              <Select
-                labelId="period-selector-label"
-                value={filterType}
-                onChange={(e) => handleChangeFilterType(e.target.value)}
-              >
-                <MenuItem value={1}>Filtro por Data</MenuItem>
-                <MenuItem value={2}>Filtro por Período</MenuItem>
-              </Select>
-              <FormHelperText>Selecione o período desejado</FormHelperText>
-            </FormControl>
-          </Grid>
-
-          {renderFilters()}
-
-          {/* BOTAO FILTRAR */}
-          <Grid item xs={12} className={classes.alignRight}>
-            <ButtonWithSpinner
-              loading={loading}
-              onClick={() => fetchData()}
-              variant="contained"
-              color="primary"
-            >
-              Filtrar
-            </ButtonWithSpinner>
-          </Grid>
+		 
 
           {/* USUARIOS ONLINE */}
           <Grid item xs={12}>
