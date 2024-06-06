@@ -1101,19 +1101,6 @@ const verifyQueue = async (
       chatbot = firstQueue.options.length > 0;
     }
 	
-	//envio de midia
-    if (firstQueue.mediaPath !== null) {
-      console.log(firstQueue.mediaPath)
-
-      const filePath = path.resolve("public", firstQueue.mediaPath);
-
-
-      const optionsMsg = await getMessageOptions(firstQueue.mediaName, filePath);
-
-      let sentMessage = await wbot.sendMessage(`${ticket.contact.number}@${ticket.isGroup ? "g.us" : "s.whatsapp.net"}`, { ...optionsMsg });
-
-      await verifyMediaMessage(sentMessage, ticket, contact);
-    }
 
     //inicia integração dialogflow/n8n
     if (
