@@ -19,6 +19,7 @@ import DeleteWhatsAppMessage from "../services/WbotServices/DeleteWhatsAppMessag
 import GetProfilePicUrl from "../services/WbotServices/GetProfilePicUrl";
 import SendWhatsAppMedia from "../services/WbotServices/SendWhatsAppMedia";
 import SendWhatsAppMessage from "../services/WbotServices/SendWhatsAppMessage";
+import EditWhatsAppMessage from "../services/WbotServices/EditWhatsAppMessage";
 type IndexQuery = {
   pageNumber: string;
 };
@@ -192,3 +193,21 @@ export const send = async (req: Request, res: Response): Promise<Response> => {
     }
   }
 };
+
+export const edit = async (req: Request, res: Response): Promise<Response> => {
+  const { messageId } = req.params;
+  const { companyId } = req.user;
+  const { body }: MessageData = req.body;
+  console.log(body)
+  const { ticket , message } = await EditWhatsAppMessage({messageId, body});
+
+  const io = getIO();
+ io.emit(`company-${companyId}-appMessage`, {
+    action:"update",
+    message,
+    ticket: ticket,
+    contact: ticket.contact,
+  });
+
+  return res.send();
+}

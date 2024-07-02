@@ -931,6 +931,7 @@ const messages = {
       messageOptionsMenu: {
         delete: "Deletar",
         reply: "Responder",
+		edit: 'Editar Mensagem',
         confirmationModal: {
           title: "Apagar mensagem?",
           message: "Esta ação não pode ser revertida.",

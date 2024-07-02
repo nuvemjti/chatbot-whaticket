@@ -1619,6 +1619,39 @@ const handleChartbot = async (ticket: Ticket, msg: WAMessage, wbot: Session, don
         ["createdAt", "ASC"],
       ],
     });
+	
+	if (queueOptions.length === 0) {
+	const textMessage = {
+	  text: formatBody(`\u200e${currentOption.message}`, ticket.contact),
+	};
+
+	const sendMsg = await wbot.sendMessage(
+	  `${ticket.contact.number}@${ticket.isGroup ? "g.us" : "s.whatsapp.net"}`,
+	  textMessage
+	);
+	
+	await verifyMessage(sendMsg, ticket, ticket.contact);
+		        if (currentOption.mediaPath !== null && currentOption.mediaPath !== "")  {
+
+          const filePath = path.resolve("public", currentOption.mediaPath);
+
+
+          const optionsMsg = await getMessageOptions(currentOption.mediaName, filePath);
+
+          let sentMessage = await wbot.sendMessage(`${ticket.contact.number}@${ticket.isGroup ? "g.us" : "s.whatsapp.net"}`, { ...optionsMsg });
+
+          await verifyMediaMessage(sentMessage, ticket, ticket.contact);
+        }
+
+	await verifyMessage(sendMsg, ticket, ticket.contact);
+	
+	await ticket.update({
+	  queueOptionId: null,
+	  chatbot: false,
+	});
+	//console.log("Fim do chatbot. Última opção alcançada.");
+	return;
+  }
 
     if (queueOptions.length > -1) {
 
