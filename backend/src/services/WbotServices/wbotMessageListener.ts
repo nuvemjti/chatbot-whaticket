@@ -2446,6 +2446,17 @@ const wbotMessageListener = async (wbot: Session, companyId: number): Promise<vo
         handleMsgAck(message, message.update.status);
       });
     });
+	
+	wbot.ev.on('messaging-history.set', async ({ isLatest, messages }) => {
+		if (isLatest) {
+		const filteredMessages = messages.filter(filterMessages);
+		filteredMessages.forEach(async message => {
+		await Promise.all([handleMessage(message, wbot, companyId)])
+		await Promise.all([verifyRecentCampaign(message, companyId)]);
+		await Promise.all([verifyCampaignMessageAndCloseTicket(message, companyId)]);
+		})
+		}
+		});
 
     // wbot.ev.on("messages.set", async (messageSet: IMessage) => {
     //   messageSet.messages.filter(filterMessages).map(msg => msg);
@@ -2457,4 +2468,3 @@ const wbotMessageListener = async (wbot: Session, companyId: number): Promise<vo
 };
 
 export { handleMessage, wbotMessageListener };
-
