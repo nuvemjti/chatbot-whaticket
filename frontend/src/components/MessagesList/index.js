@@ -10,6 +10,7 @@ import {
   Divider,
   IconButton,
   makeStyles,
+  Badge,
 } from "@material-ui/core";
 
 import {
@@ -19,6 +20,7 @@ import {
   DoneAll,
   ExpandMore,
   GetApp,
+  Reply,
 } from "@material-ui/icons";
 
 import MarkdownWrapper from "../MarkdownWrapper";
@@ -31,6 +33,9 @@ import VCardPreview from "../VCardPreview";
 import api from "../../services/api";
 import toastError from "../../errors/toastError";
 import { SocketContext } from "../../context/Socket/SocketContext";
+import { ForwardMessageContext } from "../../context/ForwarMessage/ForwardMessageContext";
+import { ReplyMessageContext } from "../../context/ReplyingMessage/ReplyingMessageContext";
+import SelectMessageCheckbox from "./SelectMessageCheckbox";
 
 const useStyles = makeStyles((theme) => ({
   messagesListWrapper: {
@@ -201,7 +206,16 @@ const useStyles = makeStyles((theme) => ({
     overflowWrap: "break-word",
     padding: "3px 80px 6px 6px",
   },
-
+  forwardMessage: {
+    fontSize: 12,
+    fontStyle: "italic",
+    position: "absolute",
+    top: 0,
+    left: 5,
+    color: "#999",
+    display: "flex",
+    alignItems: "center"
+  },
   messageMedia: {
     objectFit: "cover",
     width: 250,
@@ -327,6 +341,8 @@ const MessagesList = ({ ticket, ticketId, isGroup }) => {
   const currentTicketId = useRef(ticketId);
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
   const socketManager = useContext(SocketContext);
+  const { setReplyingMessage } = useContext(ReplyMessageContext);
+  const { showSelectMessageCheckbox } = useContext(ForwardMessageContext);
 
   useEffect(() => {
     dispatch({ type: "RESET" });
@@ -413,6 +429,13 @@ const MessagesList = ({ ticket, ticketId, isGroup }) => {
     if (scrollTop < 50) {
       loadMore();
     }
+  };
+
+  const hanldeReplyMessage = (e, message) => {
+    //if (ticket.status === "open" || ticket.status === "group") {
+    setAnchorEl(null);
+    setReplyingMessage(message);
+    //}
   };
 
   const handleOpenMessageOptionsMenu = (e, message) => {
@@ -761,7 +784,19 @@ const MessagesList = ({ ticket, ticketId, isGroup }) => {
               {renderDailyTimestamps(message, index)}
               {renderNumberTicket(message, index)}
               {renderMessageDivider(message, index)}
-              <div className={classes.messageLeft}>
+              <div
+                className={classes.messageLeft}
+                title={message.queueId && message.queue?.name}
+                onDoubleClick={(e) => hanldeReplyMessage(e, message)}
+              >
+                {showSelectMessageCheckbox && (
+                  <SelectMessageCheckbox
+                    // showSelectMessageCheckbox={showSelectMessageCheckbox}
+                    message={message}
+                  // selectedMessagesList={selectedMessagesList}
+                  // setSelectedMessagesList={setSelectedMessagesList}
+                  />
+                )}
                 <IconButton
                   variant="contained"
                   size="small"
@@ -772,6 +807,14 @@ const MessagesList = ({ ticket, ticketId, isGroup }) => {
                 >
                   <ExpandMore />
                 </IconButton>
+                {message.isForwarded && (
+                  <div>
+                    <span className={classes.forwardMessage}
+                    ><Reply style={{ color: "grey", transform: 'scaleX(-1)' }} /> Encaminhada
+                    </span>
+                    <br />
+                  </div>
+                )}
                 {isGroup && (
                   <span className={classes.messageContactName}>
                     {message.contact?.name}
@@ -797,9 +840,37 @@ const MessagesList = ({ ticket, ticketId, isGroup }) => {
                 ) && checkMessageMedia(message)}
                 <div className={classes.textContentItem}>
                   {message.quotedMsg && renderQuotedMessage(message)}
-                  <MarkdownWrapper>
-                    {message.mediaType === "locationMessage" || message.mediaType === "contactMessage" ? null : message.body}
-                  </MarkdownWrapper>
+                  {message.mediaType !== "reactionMessage" && (
+                    <MarkdownWrapper>
+                      {message.mediaType === "locationMessage" || message.mediaType === "contactMessage" 
+                        ? null
+                        : message.body}
+                    </MarkdownWrapper>
+                  )}
+                  {message.quotedMsg && message.mediaType === "reactionMessage" && message.body && (
+                    <>
+                      <span style={{ marginLeft: "0px", display: 'flex', alignItems: 'center' }}>
+                        <MarkdownWrapper>
+                          {"_*" + (message.fromMe ? 'Você' : (message?.contact?.name ?? 'Contato')) + "*_ reagiu... "}
+                        </MarkdownWrapper>
+                        <Badge 
+                          className={classes.badge}
+                          overlap="circular"
+                          anchorOrigin={{
+                            vertical: 'bottom',
+                            horizontal: 'right',
+                          }}
+                          badgeContent={
+                            <span style={{ fontSize: "1.2em", marginTop: "0", marginLeft: "5px" }}>
+                              {message.body}
+                            </span>
+                          }
+                        >
+                        </Badge>
+                      </span>
+                    </>
+                  )}
+                                  
                   <span className={classes.timestamp}>
                     {format(parseISO(message.createdAt), "HH:mm")}
                   </span>
@@ -813,7 +884,17 @@ const MessagesList = ({ ticket, ticketId, isGroup }) => {
               {renderDailyTimestamps(message, index)}
               {renderNumberTicket(message, index)}
               {renderMessageDivider(message, index)}
-              <div className={classes.messageRight}>
+              <div className={classes.messageRight}
+              onDoubleClick={(e) => hanldeReplyMessage(e, message)}
+            >
+              {showSelectMessageCheckbox && (
+                <SelectMessageCheckbox
+                  // showSelectMessageCheckbox={showSelectMessageCheckbox}
+                  message={message}
+                // selectedMessagesList={selectedMessagesList}
+                // setSelectedMessagesList={setSelectedMessagesList}
+                />
+              )}
                 <IconButton
                   variant="contained"
                   size="small"
@@ -824,6 +905,14 @@ const MessagesList = ({ ticket, ticketId, isGroup }) => {
                 >
                   <ExpandMore />
                 </IconButton>
+                {message.isForwarded && (
+                  <div>
+                    <span className={classes.forwardMessage}
+                    ><Reply style={{ color: "grey", transform: 'scaleX(-1)' }} /> Encaminhada
+                    </span>
+                    <br />
+                  </div>
+                )}
                 {(message.mediaUrl || message.mediaType === "locationMessage" || message.mediaType === "vcard" || message.mediaType === "contactMessage"
                   //|| message.mediaType === "multi_vcard" 
                 ) && checkMessageMedia(message)}
@@ -840,7 +929,34 @@ const MessagesList = ({ ticket, ticketId, isGroup }) => {
                     />
                   )}
                   {message.quotedMsg && renderQuotedMessage(message)}
-                  <MarkdownWrapper>{message.body}</MarkdownWrapper>
+                  {message.mediaType !== "reactionMessage" && message.mediaType !== "locationMessage" && (
+                    <MarkdownWrapper>{message.body}</MarkdownWrapper>
+                  )}
+                  {message.quotedMsg && message.mediaType === "reactionMessage" && message.body && (
+                    <>
+                      <span style={{ marginLeft: "0px", display: 'flex', alignItems: 'center' }}>
+                        <MarkdownWrapper>
+                          {"_*" + (message.fromMe ? 'Você' : (message?.contact?.name ?? 'Contato')) + "*_ reagiu... "}
+                        </MarkdownWrapper>
+                        <Badge 
+                          className={classes.badge}
+                          overlap="circular"
+                          anchorOrigin={{
+                            vertical: 'bottom',
+                            horizontal: 'right',
+                          }}
+                          badgeContent={
+                            <span style={{ fontSize: "1.2em", marginTop: "0", marginLeft: "5px" }}>
+                              {message.body}
+                            </span>
+                          }
+                        >
+                        </Badge>
+                      </span>
+                    </>
+                  )}
+                  
+                
                   <span className={classes.timestamp}>
                     {format(parseISO(message.createdAt), "HH:mm")}
                     {renderMessageAck(message)}

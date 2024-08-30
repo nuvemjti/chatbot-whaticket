@@ -10,7 +10,7 @@ import makeWASocket, {
   jidNormalizedUser,
   CacheStore
 } from "@whiskeysockets/baileys";
-
+import { Op } from "sequelize";
 import { FindOptions } from "sequelize/types";
 import Whatsapp from "../models/Whatsapp";
 import { logger } from "../utils/logger";
@@ -23,7 +23,8 @@ import { Store } from "./store";
 import { StartWhatsAppSession } from "../services/WbotServices/StartWhatsAppSession";
 import DeleteBaileysService from "../services/BaileysServices/DeleteBaileysService";
 import NodeCache from 'node-cache';
-
+import Contact from "../models/Contact";
+import Ticket from "../models/Ticket";
 const loggerBaileys = MAIN_LOGGER.child({});
 loggerBaileys.level = "error";
 
@@ -126,7 +127,11 @@ export const initWASocket = async (whatsapp: Whatsapp): Promise<Session> => {
         wsocket = makeWASocket({
           logger: loggerBaileys,
           printQRInTerminal: false,
-          browser: Browsers.appropriate("Desktop"),
+          browser: [
+            process.env.BROWSER_CLIENT || "PlwDesign",
+            process.env.BROWSER_NAME || "Chrome",
+            process.env.BROWSER_VERSION || "10.0"
+          ],
           auth: {
             creds: state.creds,
             keys: makeCacheableSignalKeyStore(state.keys, logger),
@@ -278,6 +283,59 @@ export const initWASocket = async (whatsapp: Whatsapp): Promise<Session> => {
           }
         );
         wsocket.ev.on("creds.update", saveState);
+
+        wsocket.ev.on(
+          "presence.update",
+          async ({ id: remoteJid, presences }) => {
+            try {
+              logger.debug(
+                { remoteJid, presences },
+                "Received contact presence"
+              );
+              if (!presences[remoteJid]?.lastKnownPresence) {
+                return;
+              }
+              const contact = await Contact.findOne({
+                where: {
+                  number: remoteJid.replace(/\D/g, ""),
+                  companyId: whatsapp.companyId
+                }
+              });
+              if (!contact) {
+                return;
+              }
+              const ticket = await Ticket.findOne({
+                where: {
+                  contactId: contact.id,
+                  whatsappId: whatsapp.id,
+                  status: {
+                    [Op.or]: ["open", "pending"]
+                  }
+                }
+              });
+
+              if (ticket) {
+                io.to(ticket.id.toString())
+                  .to(`company-${whatsapp.companyId}-${ticket.status}`)
+                  .to(`queue-${ticket.queueId}-${ticket.status}`)
+                  .emit(`company-${whatsapp.companyId}-presence`, {
+                    ticketId: ticket.id,
+                    presence: presences[remoteJid].lastKnownPresence
+                  });
+              }
+            } catch (error) {
+              logger.error(
+                { remoteJid, presences },
+                "presence.update: error processing"
+              );
+              if (error instanceof Error) {
+                logger.error(`Error: ${error.name} ${error.message}`);
+              } else {
+                logger.error(`Error was object of type: ${typeof error}`);
+              }
+            }
+          }
+        );
 
         store.bind(wsocket.ev);
       })();

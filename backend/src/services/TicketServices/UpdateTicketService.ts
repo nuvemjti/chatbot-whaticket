@@ -29,6 +29,7 @@ interface TicketData {
   useIntegration?: boolean;
   integrationId?: number | null;
   promptId?: number | null;
+  lastMessage?: string;
 }
 
 interface Request {
@@ -51,7 +52,7 @@ const UpdateTicketService = async ({
 
   try {
     const { status } = ticketData;
-    let { queueId, userId, whatsappId } = ticketData;
+    let { queueId, userId, whatsappId, lastMessage = null } = ticketData;
     let chatbot: boolean | null = ticketData.chatbot || false;
     let queueOptionId: number | null = ticketData.queueOptionId || null;
     let promptId: number | null = ticketData.promptId || null;
@@ -241,7 +242,8 @@ const UpdateTicketService = async ({
       userId,
       whatsappId,
       chatbot,
-      queueOptionId
+      queueOptionId,
+      lastMessage: lastMessage !== null ? lastMessage : ticket.lastMessage
     });
 
     await ticket.reload();
@@ -251,7 +253,7 @@ const UpdateTicketService = async ({
         whatsappId,
         queuedAt: moment().toDate(),
         startedAt: null,
-        userId: null
+        userId: null,
       });
     }
 
@@ -261,6 +263,7 @@ const UpdateTicketService = async ({
         ratingAt: null,
         rated: false,
         whatsappId,
+        lastMessage: lastMessage !== null ? lastMessage : ticket.lastMessage,
         userId: ticket.userId
       });
     }

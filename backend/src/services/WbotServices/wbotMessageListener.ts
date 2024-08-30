@@ -29,14 +29,17 @@ import {
   SpeechSynthesizer
 } from "microsoft-cognitiveservices-speech-sdk";
 import moment from "moment";
-import { ChatCompletionRequestMessage, Configuration, OpenAIApi } from "openai";
+//import { ChatCompletionRequestMessage, Configuration, OpenAIApi } from "openai";
+import OpenAI from "openai";
 import { Op } from "sequelize";
 import { debounce } from "../../helpers/Debounce";
 import formatBody from "../../helpers/Mustache";
 import { cacheLayer } from "../../libs/cache";
 import { getIO } from "../../libs/socket";
 import { Store } from "../../libs/store";
+import MarkDeleteWhatsAppMessage from "./MarkDeleteWhatsAppMessage";
 import Campaign from "../../models/Campaign";
+import * as MessageUtils from "./wbotGetMessageFromType";
 import CampaignShipping from "../../models/CampaignShipping";
 import Queue from "../../models/Queue";
 import QueueIntegrations from "../../models/QueueIntegrations";
@@ -69,7 +72,7 @@ type Session = WASocket & {
   store?: Store;
 };
 
-interface SessionOpenAi extends OpenAIApi {
+interface SessionOpenAi extends OpenAI {
   id?: number;
 }
 const sessionsOpenAi: SessionOpenAi[] = [];
@@ -378,6 +381,7 @@ export const getBodyMessage = (msg: proto.IWebMessageInfo): string | null => {
       buttonsMessage: getBodyButton(msg) || msg.message?.listResponseMessage?.singleSelectReply?.selectedRowId,
       viewOnceMessage: getBodyButton(msg) || msg.message?.listResponseMessage?.singleSelectReply?.selectedRowId,
       stickerMessage: "sticker",
+      reactionMessage: MessageUtils.getReactionMessage(msg) || "reaction",
       contactMessage: msg.message?.contactMessage?.vcard,
       contactsArrayMessage: (msg.message?.contactsArrayMessage?.contacts) && contactsArrayMessageGet(msg),
       //locationMessage: `Latitude: ${msg.message.locationMessage?.degreesLatitude} - Longitude: ${msg.message.locationMessage?.degreesLongitude}`,
@@ -392,7 +396,6 @@ export const getBodyMessage = (msg: proto.IWebMessageInfo): string | null => {
       audioMessage: "Áudio",
       listMessage: getBodyButton(msg) || msg.message?.listResponseMessage?.title,
       listResponseMessage: msg.message?.listResponseMessage?.singleSelectReply?.selectedRowId,
-      reactionMessage: msg.message?.reactionMessage?.text || "reaction",
     };
 
     const objKey = Object.keys(types).find(key => key === type);
@@ -437,9 +440,12 @@ export const getQuotedMessage = (msg: proto.IWebMessageInfo): any => {
 export const getQuotedMessageId = (msg: proto.IWebMessageInfo) => {
   const body = extractMessageContent(msg.message)[
     Object.keys(msg?.message).values().next().value
-  ];
+    ];
+  let reaction = msg?.message?.reactionMessage
+    ? msg?.message?.reactionMessage?.key?.id
+    : "";
 
-  return body?.contextInfo?.stanzaId;
+  return reaction ? reaction : body?.contextInfo?.stanzaId;
 };
 
 const getMeSocket = (wbot: Session): IMe => {
@@ -680,16 +686,15 @@ const handleOpenAi = async (
     "public"
   );
 
-  let openai: SessionOpenAi;
-  const openAiIndex = sessionsOpenAi.findIndex(s => s.id === wbot.id);
-
+  let openai: OpenAI | any;
+  const openAiIndex = sessionsOpenAi.findIndex(s => s.id === ticket.id);
 
   if (openAiIndex === -1) {
-    const configuration = new Configuration({
-      apiKey: prompt.apiKey
-    });
-    openai = new OpenAIApi(configuration);
-    openai.id = wbot.id;
+    // const configuration = new Configuration({
+    //   apiKey: prompt.apiKey
+    // });
+    openai = new OpenAI({ apiKey: prompt.apiKey });
+    openai.id = ticket.id;
     sessionsOpenAi.push(openai);
   } else {
     openai = sessionsOpenAi[openAiIndex];
@@ -701,13 +706,11 @@ const handleOpenAi = async (
     limit: prompt.maxMessages
   });
 
-  const promptSystem = `Nas respostas utilize o nome ${sanitizeName(
-    contact.name || "Amigo(a)"
-  )} para identificar o cliente.\nSua resposta deve usar no máximo ${prompt.maxTokens
-    } tokens e cuide para não truncar o final.\nSempre que possível, mencione o nome dele para ser mais personalizado o atendimento e mais educado. Quando a resposta requer uma transferência para o setor de atendimento, comece sua resposta com 'Ação: Transferir para o setor de atendimento'.\n
+  const promptSystem = `Nas respostas utilize o nome ${sanitizeName(contact.name || "Amigo(a)")} para identificar o cliente.\nSua resposta deve usar no máximo ${prompt.maxTokens}
+     tokens e cuide para não truncar o final.\nSempre que possível, mencione o nome dele para ser mais personalizado o atendimento e mais educado. Quando a resposta requer uma transferência para o setor de atendimento, comece sua resposta com 'Ação: Transferir para o setor de atendimento'.\n
   ${prompt.prompt}\n`;
 
-  let messagesOpenAi: ChatCompletionRequestMessage[] = [];
+  let messagesOpenAi = [];
 
   if (msg.message?.conversation || msg.message?.extendedTextMessage?.text) {
     messagesOpenAi = [];
@@ -728,7 +731,7 @@ const handleOpenAi = async (
     }
     messagesOpenAi.push({ role: "user", content: bodyMessage! });
 
-    const chat = await openai.createChatCompletion({
+    const chat = await openai.chat.completions.create({
       model: "gpt-3.5-turbo-1106",
       messages: messagesOpenAi,
       max_tokens: prompt.maxTokens,
@@ -777,7 +780,11 @@ const handleOpenAi = async (
   } else if (msg.message?.audioMessage) {
     const mediaUrl = mediaSent!.mediaUrl!.split("/").pop();
     const file = fs.createReadStream(`${publicFolder}/${mediaUrl}`) as any;
-    const transcription = await openai.createTranscription(file, "whisper-1");
+    
+    const transcription = await openai.audio.transcriptions.create({
+      model: "whisper-1",
+      file: file,
+    });
 
     messagesOpenAi = [];
     messagesOpenAi.push({ role: "system", content: promptSystem });
@@ -795,8 +802,8 @@ const handleOpenAi = async (
         }
       }
     }
-    messagesOpenAi.push({ role: "user", content: transcription.data.text });
-    const chat = await openai.createChatCompletion({
+    messagesOpenAi.push({ role: "user", content: transcription.text });
+    const chat = await openai.chat.completions.create({
       model: "gpt-3.5-turbo-1106",
       messages: messagesOpenAi,
       max_tokens: prompt.maxTokens,
@@ -813,9 +820,9 @@ const handleOpenAi = async (
     if (prompt.voice === "texto") {
       console.log('responseVoice2', response)
       const sentMessage = await wbot.sendMessage(msg.key.remoteJid!, {
-        text: response!
+        text: `\u200e ${response!}`
       });
-      await verifyMessage(sentMessage!, ticket, contact);
+      //await verifyMessage(sentMessage!, ticket, contact);
     } else {
       const fileNameWithOutExtension = `${ticket.id}_${Date.now()}`;
       convertTextToSpeechAndSaveToFile(
@@ -945,6 +952,21 @@ const verifyMediaMessage = async (
   return newMessage;
 };
 
+function getStatus(msg, msgType) {
+
+  if (msg.status == "PENDING") {
+
+    if (msg.key.fromMe && msgType == "reactionMessage"){
+      return 3;
+    }
+
+    return 1
+  } else if (msg.status == "SERVER_ACK") {
+    return 1
+  }
+  return msg.status;
+}
+
 export const verifyMessage = async (
   msg: proto.IWebMessageInfo,
   ticket: Ticket,
@@ -1033,6 +1055,7 @@ const isValidMsg = (msg: proto.IWebMessageInfo): boolean => {
       msgType === "voiceMessage" ||
       msgType === "mediaMessage" ||
       msgType === "contactsArrayMessage" ||
+      msgType === "reactionMessage" ||
       msgType === "reactionMessage" ||
       msgType === "ephemeralMessage" ||
       msgType === "protocolMessage" ||
@@ -1856,7 +1879,8 @@ const handleMessage = async (
         !hasMedia &&
         msgType !== "conversation" &&
         msgType !== "extendedTextMessage" &&
-        msgType !== "vcard"
+        msgType !== "vcard" &&
+        msgType !== "reactionMessage" 
       )
         return;
       msgContact = await getContactMessage(msg, wbot);
@@ -2233,6 +2257,7 @@ const handleMessage = async (
           }
         }
       }
+	  
     } catch (e) {
       Sentry.captureException(e);
       console.log(e);
@@ -2442,6 +2467,11 @@ const wbotMessageListener = async (wbot: Session, companyId: number): Promise<vo
       if (messageUpdate.length === 0) return;
       messageUpdate.forEach(async (message: WAMessageUpdate) => {
         (wbot as WASocket)!.readMessages([message.key])
+		
+		const msgUp = { ...messageUpdate }
+        if (msgUp['0']?.update.messageStubType === 1 && msgUp['0']?.key.remoteJid !== 'status@broadcast') {
+          MarkDeleteWhatsAppMessage(msgUp['0']?.key.remoteJid, null, msgUp['0']?.key.id, companyId)
+        }
 
         handleMsgAck(message, message.update.status);
       });

@@ -426,15 +426,15 @@ export function CompaniesManagerGrid(props) {
       const now = moment();
       const dueDate = moment(record.dueDate);
       const diff = dueDate.diff(now, "days");
-      if (diff === 5) {
+      if (diff >= 1 && diff <= 5) {
         return { backgroundColor: "#fffead" };
       }
-      if (diff >= -3 && diff <= 4) {
-        return { backgroundColor: "#f7cc8f" };
-      }
-      if (diff === -4) {
+      if (diff <= 0) {
         return { backgroundColor: "#fa8c8c" };
       }
+      // else {
+      //   return { backgroundColor: "#affa8c" };
+      // }
     }
     return {};
   };

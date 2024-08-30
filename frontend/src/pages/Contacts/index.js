@@ -35,7 +35,8 @@ import { AuthContext } from "../../context/Auth/AuthContext";
 import { Can } from "../../components/Can";
 import NewTicketModal from "../../components/NewTicketModal";
 import { SocketContext } from "../../context/Socket/SocketContext";
-
+import { generateColor } from "../../helpers/colorGenerator";
+import { getInitials } from "../../helpers/getInitials";
 import {CSVLink} from "react-csv";
 
 const reducer = (state, action) => {
@@ -388,7 +389,11 @@ function getDateLastMessage(contact) {
               {contacts.map((contact) => (
                 <TableRow key={contact.id}>
                   <TableCell style={{ paddingRight: 0 }}>
-                    {<Avatar src={contact.profilePicUrl} />}
+                    { <Avatar
+                      style={{ backgroundColor: generateColor(contact?.number), fontWeight: "bold", color: "white" }}
+                      src={contact.profilePicUrl}>
+                      {getInitials(contact?.name)}
+                    </Avatar>}
                   </TableCell>
                   <TableCell>{contact.name}</TableCell>
                   <TableCell align="center">{contact.number}</TableCell>

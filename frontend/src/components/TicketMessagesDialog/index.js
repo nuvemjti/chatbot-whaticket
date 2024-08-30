@@ -18,7 +18,7 @@ import { ReplyMessageProvider } from "../../context/ReplyingMessage/ReplyingMess
 import TicketHeader from "../TicketHeader";
 import TicketInfo from "../TicketInfo";
 import { SocketContext } from "../../context/Socket/SocketContext";
-
+import { ForwardMessageContext } from "../../context/ForwarMessage/ForwardMessageContext";
 const drawerWidth = 320;
 
 const useStyles = makeStyles((theme) => ({
@@ -66,7 +66,7 @@ export default function TicketMessagesDialog({ open, handleClose, ticketId }) {
   const [loading, setLoading] = useState(true);
   const [contact, setContact] = useState({});
   const [ticket, setTicket] = useState({});
-
+  const { showSelectMessageCheckbox } = useContext(ForwardMessageContext);
   const socketManager = useContext(SocketContext);
 
   useEffect(() => {

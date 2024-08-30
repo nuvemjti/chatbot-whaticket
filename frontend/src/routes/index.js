@@ -18,6 +18,7 @@ import MessagesAPI from "../pages/MessagesAPI/";
 import Helps from "../pages/Helps/";
 import ContactLists from "../pages/ContactLists/";
 import ContactListItems from "../pages/ContactListItems/";
+import { ForwardMessageProvider } from "../context/ForwarMessage/ForwardMessageContext";
 // import Companies from "../pages/Companies/";
 import QuickMessages from "../pages/QuickMessages/";
 import Kanban from "../pages/Kanban";
@@ -25,6 +26,7 @@ import { AuthProvider } from "../context/Auth/AuthContext";
 import { TicketsContextProvider } from "../context/Tickets/TicketsContext";
 import { WhatsAppsProvider } from "../context/WhatsApp/WhatsAppsContext";
 import Route from "./Route";
+//import kanbanSchedules from "../pages/kanbanSchedules/";
 import Schedules from "../pages/Schedules";
 import Campaigns from "../pages/Campaigns";
 import CampaignsConfig from "../pages/CampaignsConfig";
@@ -51,6 +53,7 @@ const Routes = () => {
   return (
     <BrowserRouter>
       <AuthProvider>
+	  <ForwardMessageProvider>
         <TicketsContextProvider>
           <Switch>
             <Route exact path="/login" component={Login} />
@@ -97,7 +100,7 @@ const Routes = () => {
                 <Route exact path="/files" component={Files} isPrivate />
                 <Route exact path="/prompts" component={Prompts} isPrivate />
                 <Route exact path="/queue-integration" component={QueueIntegration} isPrivate />
-
+					{/*<Route exact path="/kanban-schedules" component={kanbanSchedules} isPrivate />*/}
                 <Route
                   exact
                   path="/messages-api"
@@ -175,6 +178,7 @@ const Routes = () => {
           </Switch>
           <ToastContainer autoClose={3000} />
         </TicketsContextProvider>
+		</ForwardMessageProvider>
       </AuthProvider>
     </BrowserRouter>
   );
