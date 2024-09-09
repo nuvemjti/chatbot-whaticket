@@ -2,7 +2,7 @@
   "name": "frontend",
   "version": "0.1.0",
   "versionSystem": "5.2.6",
-  "nomeEmpresa": "PLW Design",
+  "nomeEmpresa": "Whaticket SaaS",
   "private": true,
   "dependencies": {
     "@date-io/date-fns": "^2.14.0",
