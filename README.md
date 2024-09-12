@@ -8,9 +8,9 @@
 
 Sugestão de VPS:
 
-BASIC: 4 vCores, 6 GB de RAM e 100 GB de SSD NVMe $ 4.99 USD Mensal com taxa de setup de $ 4.99.
+BASIC: 4 vCores, 6 GB de RAM e 100 GB de SSD NVMe $4.99 USD Mensal com taxa de setup de $4.99.
 
-STANDARD: 4 vCores, 12 GB de RAM e 200 GB de SSD NVMe $ 7.99 USD Mensal com taxa de setup de $ 5.99.
+STANDARD: 6 vCores, 12 GB de RAM e 200 GB de SSD NVMe $9.99 USD Mensal com taxa de setup de $5.99.
 
 ```
 https://control.peramix.com/?affid=14
