@@ -56,10 +56,10 @@ Requer servidor Ubuntu 20.04 LTS com ao menos 4 vcore e 8gb de ram.</br>
 Recomendamos Peramix, Contabo e Hetzner. </br>
 Não recomendamos Hostinger, Hostgator e Locaweb.</br>
 
-Siga o arquivo de Instruções para instalação:
+Siga o arquivo de Instruções para instalação, você precisa ter acesso liberado ao Google Drive:
 
 ```
-https://drive.google.com/file/d/137rsR4o-vzNUDDg0M1eIal0wH29En3J4/view?usp=drivesdk
+https://drive.google.com/drive/folders/1ye-y0SCV8zWof9SN4sBb22nVoOdtf5rL?usp=drive_link
 ```
 
 Confira no pdf aqui como gerar um webhook de retorno automático de pagamento da Efi.
