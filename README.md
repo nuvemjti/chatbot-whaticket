@@ -19,8 +19,8 @@ Informações Importantes:
 Apenas suporte básico.
 Versão a venda exclusivamente na plataforma Kirvano.
 
-24/07/2024 – Versão 5.2.6
-Bug na importação de conversas e na exibição de telene da conexão, aguardando atualizações.
+18/09/2024 – Versões Futuras
+A expectativa de que a importação de conversas esteja disponível na proxíma atualização, em uma primeira versão da 5.2.6 apesar das opções ela não funcionava, o que foi removido na revisão.
 
 24/07/2024 – Versão 5.2.6 - Pago
 
