@@ -738,7 +738,7 @@ const handleOpenAi = async (
       temperature: prompt.temperature
     });
 
-    let response = chat.data.choices[0].message?.content;
+    let response = chat.choices[0].message?.content;
 
     if (response?.includes("Ação: Transferir para o setor de atendimento")) {
       await transferQueue(prompt.queueId, ticket, contact);
