@@ -8,9 +8,9 @@
 
 Sugestão de VPS:
 
-BASIC: 4 vCores, 6 GB de RAM e 100 GB de SSD NVMe $ 4.99 USD Mensal com taxa de setup de $ 4.99.
+BASIC: 4 vCores, 6 GB de RAM e 100 GB de SSD NVMe $4.99 USD Mensal com taxa de setup de $4.99.
 
-STANDARD: 4 vCores, 12 GB de RAM e 200 GB de SSD NVMe $ 7.99 USD Mensal com taxa de setup de $ 5.99.
+STANDARD: 6 vCores, 12 GB de RAM e 200 GB de SSD NVMe $9.99 USD Mensal com taxa de setup de $5.99.
 
 ```
 https://control.peramix.com/?affid=14
@@ -19,7 +19,8 @@ Informações Importantes:
 Apenas suporte básico.
 Versão a venda exclusivamente na plataforma Kirvano.
 
-24/07/2024 – Versão 5.2.6
+18/09/2024 – Versões Futuras
+A expectativa de que a importação de conversas esteja disponível na proxíma atualização, em uma primeira versão da 5.2.6 apesar das opções ela não funcionava, o que foi removido na revisão.
 
 24/07/2024 – Versão 5.2.6 - Pago
 
@@ -55,10 +56,10 @@ Requer servidor Ubuntu 20.04 LTS com ao menos 4 vcore e 8gb de ram.</br>
 Recomendamos Peramix, Contabo e Hetzner. </br>
 Não recomendamos Hostinger, Hostgator e Locaweb.</br>
 
-Siga o arquivo de Instruções para instalação:
+Siga o arquivo de Instruções para instalação, você precisa ter acesso liberado ao Google Drive:
 
 ```
-https://drive.google.com/file/d/137rsR4o-vzNUDDg0M1eIal0wH29En3J4/view?usp=drivesdk
+https://drive.google.com/drive/folders/1ye-y0SCV8zWof9SN4sBb22nVoOdtf5rL?usp=drive_link
 ```
 
 Confira no pdf aqui como gerar um webhook de retorno automático de pagamento da Efi.
